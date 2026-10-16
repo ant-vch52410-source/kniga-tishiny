@@ -187,6 +187,14 @@ figure input { font-size: 14px; font-style: italic; }
 .grow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .grow input[type="color"] { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
 .grow button[data-armed] { color: var(--danger); font-weight: 600; }
+/* Порядок кнопок на панели (⋯ → «Порядок кнопок на панели…») */
+.ord-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.ord { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; padding: 4px 6px 4px 10px; border-top: 1px solid var(--line); }
+.ord:first-child { border-top: 0; }
+.ord-n { font: 12px/1 var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.ord-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ord-name[data-g] { font-weight: 700; }
+.ord-b { min-width: 40px; min-height: 40px; padding: 0; font-size: 17px; line-height: 1; }
 .lb { position: fixed; inset: 0; z-index: 70; background: var(--lb-bg); color: var(--lb-fg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .lb-bar { display: flex; gap: 8px; align-items: center; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
 .lb-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
@@ -268,7 +276,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   const APP = "kniga-tishiny";
   const FORMAT = 1;
   // Номер версии текста, встроенного в страницу. Claude увеличивает его, когда присылает новый текст.
-  const SEED_VERSION = 1;
+  const SEED_VERSION = 2;
   // Телефонная версия — сайт на GitHub Pages, ставится на главный экран, как «Захват». В ней нет текста книги:
   // текст и пометки приходят «Импортом» файла с компьютера. true ставит сборка tools\telefon.py, здесь не менять.
   const SITE = true;
@@ -282,6 +290,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   ];
 
   // ---------- Исходный текст ----------
+  // Абзац — строка HTML или { html, cm: [комментарии] }: так в новую версию переходят нерешённые комментарии автора.
   const BOOK = [];
 
   const CONCEPT = [];
@@ -291,7 +300,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const id = p => p + (++n).toString(36);
     const mk = (pid, title, arr, head) => ({
       id: pid, title, head: head || null,
-      sections: arr.map(([t, ps]) => ({ id: id("s"), title: t, blocks: ps.map(h => ({ id: id("b"), t: "p", html: h, cm: [] })) }))
+      sections: arr.map(([t, ps]) => ({ id: id("s"), title: t, blocks: ps.map(h => typeof h === "string"
+        ? { id: id("b"), t: "p", html: h, cm: [] }
+        : { id: id("b"), t: "p", html: h.html, cm: (h.cm || []).map(c => ({ ...c })) }) }))
     });
     return {
       app: APP, format: FORMAT, seedVersion: SEED_VERSION, title: "Книга Тишины",
@@ -613,39 +624,70 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     renderTabs(); renderToolbar(); renderView(); window.scrollTo(0, 0);
   }
 
+  // Кнопки панели пометок в обычном порядке. key — имя кнопки в сохранённом порядке, cat — кучка между разделителями.
+  function toolbarItems() {
+    const items = [{ key: "edit", cat: "e", name: "Правка текста", make: () => {
+      const e = btn("", "Правка текста", () => toggleEdit());
+      e.setAttribute("aria-pressed", edit ? "true" : "false");
+      e.title = "Включить или выключить набор текста";
+      return e;
+    } }];
+    for (const g of doc.groups) items.push({ key: "g:" + g.id, cat: "g", name: g.name, g: g.id, make: () => {
+      const c = btn("chip js-sel", g.name, () => applyGroup(g.id));
+      c.dataset.g = g.id; c.title = "Пометить выделенное: " + g.name;
+      return c;
+    } });
+    items.push(
+      { key: "strike", cat: "a", name: "Зачеркнуть", make: () => btn("js-sel", "Зачеркнуть", () => strike()) },
+      { key: "comment", cat: "a", name: "Комментарий", make: () => btn("js-sel", "Комментарий", () => addComment()) },
+      { key: "delete", cat: "a", name: "Удалить", make: () => { const d = btn("js-sel", "Удалить", () => deleteText()); d.title = "Удалить выделенный текст"; return d; } },
+      { key: "clear", cat: "a", name: "Снять", make: () => { const c = btn("js-sel", "Снять", () => clearMarks()); c.title = "Снять цвет и зачёркивание с выделенного"; return c; } },
+      { key: "undo", cat: "u", name: "Отменить", make: () => btn("js-undo", "Отменить", () => undo()) },
+      { key: "add", cat: "u", name: "+ Добавить", make: () => {
+        const add = btn("", "+ Добавить", () => {
+          const t = insertTarget(); if (!t) return;
+          const p = curPart();
+          openPop(add, [
+            { label: "Картинку", fn: () => pickImage(t) },
+            { label: "Заметку", fn: () => insertBlock(t, { id: newId("b"), t: "note", text: "", cm: [] }) },
+            { label: "Абзац", fn: () => insertBlock(t, { id: newId("b"), t: "p", html: "", cm: [] }) },
+            { label: "Раздел", fn: () => addSection(p, t.bid ? findBlock(t.bid).s.id : t.sid) }
+          ]);
+        });
+        add.title = "Добавить после выбранного абзаца";
+        return add;
+      } }
+    );
+    return items;
+  }
+  // Порядок кнопок этого устройства (prefs.tbOrder — список key). Кнопки, которых в нём нет (например, новая
+  // группа), встают рядом с соседом по обычному порядку; кнопки удалённых групп просто пропадают.
+  function tbOrder(items) {
+    const saved = Array.isArray(prefs.tbOrder) ? prefs.tbOrder : [];
+    const byKey = new Map(items.map(it => [it.key, it]));
+    const out = [];
+    for (const k of saved) { const it = byKey.get(k); if (it && !out.includes(it)) out.push(it); }
+    items.forEach((it, i) => {
+      if (out.includes(it)) return;
+      let at = 0;
+      for (let j = i - 1; j >= 0; j--) { const q = out.indexOf(items[j]); if (q >= 0) { at = q + 1; break; } }
+      out.splice(at, 0, it);
+    });
+    return out;
+  }
   function renderToolbar() {
     const tb = $("#tb"); tb.textContent = "";
     const onSum = prefs.tab === SUM;
     tb.parentElement.hidden = onSum;
     if (onSum) return;
-    const e = btn("", "Правка текста", () => toggleEdit());
-    e.setAttribute("aria-pressed", edit ? "true" : "false");
-    e.title = "Включить или выключить набор текста";
-    tb.append(e, el("span", "sep"));
-    for (const g of doc.groups) {
-      const c = btn("chip js-sel", g.name, () => applyGroup(g.id));
-      c.dataset.g = g.id; c.title = "Пометить выделенное: " + g.name;
-      tb.append(c);
+    const items = toolbarItems(), order = tbOrder(items);
+    // Разделители — только в обычном порядке; в своём порядке кнопки идут подряд, чтобы больше влезало на экран
+    const plain = order.every((it, i) => it === items[i]);
+    let cat = null;
+    for (const it of order) {
+      if (plain && cat && it.cat !== cat) tb.append(el("span", "sep"));
+      tb.append(it.make()); cat = it.cat;
     }
-    tb.append(el("span", "sep"));
-    tb.append(btn("js-sel", "Зачеркнуть", () => strike()));
-    tb.append(btn("js-sel", "Комментарий", () => addComment()));
-    const d = btn("js-sel", "Удалить", () => deleteText()); d.title = "Удалить выделенный текст"; tb.append(d);
-    const c = btn("js-sel", "Снять", () => clearMarks()); c.title = "Снять цвет и зачёркивание с выделенного"; tb.append(c);
-    tb.append(el("span", "sep"));
-    tb.append(btn("js-undo", "Отменить", () => undo()));
-    const add = btn("", "+ Добавить", () => {
-      const t = insertTarget(); if (!t) return;
-      const p = curPart();
-      openPop(add, [
-        { label: "Картинку", fn: () => pickImage(t) },
-        { label: "Заметку", fn: () => insertBlock(t, { id: newId("b"), t: "note", text: "", cm: [] }) },
-        { label: "Абзац", fn: () => insertBlock(t, { id: newId("b"), t: "p", html: "", cm: [] }) },
-        { label: "Раздел", fn: () => addSection(p, t.bid ? findBlock(t.bid).s.id : t.sid) }
-      ]);
-    });
-    add.title = "Добавить после выбранного абзаца";
-    tb.append(add);
     renderToolbarState();
   }
   function renderToolbarState() {
@@ -1213,6 +1255,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Как переносить через Телеграм", fn: openHelp },
       { sep: true },
       { label: "Группы цветов…", fn: openGroups },
+      { label: "Порядок кнопок на панели…", fn: openTbOrder },
       { label: `Это устройство: ${prefs.device}…`, fn: openDevice },
       { sep: true },
       { label: "Вернуть как было до импорта…", fn: openRestore },
@@ -1458,7 +1501,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     ]);
   }
   function openReset() {
-    openModal("Начать заново с исходного текста?", para("Текст вернётся к исходному, пометки, комментарии и картинки уберутся. Текущие данные сохранятся в резервной копии: «Ещё» → «Вернуть как было до импорта»."), [
+    openModal("Начать заново с исходного текста?", para("Текст вернётся к последней версии от Claude (с оставленными в ней пометками и комментариями), твои правки после неё и картинки уберутся. Текущие данные сохранятся в резервной копии: «Ещё» → «Вернуть как было до импорта»."), [
       { label: "Начать заново", primary: true, fn: () => { (async () => { await backupCurrent(); const g = doc.groups; doc = buildSeed(); doc.groups = g; touch(); undoStack = []; renderAll(); toast("Исходный текст загружен"); })(); } },
       { label: "Отмена" }
     ]);
@@ -1500,6 +1543,47 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     };
     draw();
     openModal("Группы цветов", body, [{ label: "Готово", primary: true }], () => { renderToolbar(); renderView(true); renderTabs(); });
+  }
+  function openTbOrder() {
+    const list = el("div", "ord-list");
+    const draw = (moved, act) => {
+      list.textContent = "";
+      const order = tbOrder(toolbarItems()), last = order.length - 1;
+      order.forEach((it, i) => {
+        const row = el("div", "ord"); row.dataset.key = it.key;
+        const name = el("span", "ord-name" + (it.g ? " gname" : ""), it.name);
+        if (it.g) name.dataset.g = it.g;
+        const b = (a, sym, title, to, off) => {
+          const x = btn("ord-b", sym, () => move(it.key, to, a));
+          x.dataset.act = a; x.title = title; x.setAttribute("aria-label", `${title}: ${it.name}`); x.disabled = off;
+          return x;
+        };
+        row.append(el("span", "ord-n", String(i + 1)), name,
+          b("top", "⤒", "В начало", 0, i === 0), b("up", "↑", "Выше", i - 1, i === 0), b("down", "↓", "Ниже", i + 1, i === last));
+        list.append(row);
+      });
+      if (!moved) return;
+      const row = list.querySelector(`.ord[data-key="${moved}"]`); if (!row) return;
+      row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+      row.scrollIntoView({ block: "nearest" });
+      const f = row.querySelector(`[data-act="${act}"]:not(:disabled)`) || row.querySelector(".ord-b:not(:disabled)");
+      if (f) try { f.focus({ preventScroll: true }); } catch (e) { }
+    };
+    const move = (key, to, act) => {
+      const keys = tbOrder(toolbarItems()).map(it => it.key);
+      const from = keys.indexOf(key);
+      if (from < 0 || to < 0 || to >= keys.length || to === from) return;
+      keys.splice(to, 0, keys.splice(from, 1)[0]);
+      prefs.tbOrder = keys; savePrefs(); renderToolbar(); draw(key, act);
+    };
+    draw();
+    openModal("Порядок кнопок на панели", frag(
+      para("Подними наверх кнопки, которые нажимаешь чаще всего, — они встанут в начало панели, и листать её не придётся. Порядок свой на каждом устройстве: на телефоне и на компьютере он может быть разный.", "muted"),
+      list
+    ), [
+      { label: "Обычный порядок", fn: () => { prefs.tbOrder = null; savePrefs(); renderToolbar(); draw(); toast("Порядок кнопок как был сначала"); return false; } },
+      { label: "Готово", primary: true }
+    ]);
   }
   function removeGroup(gid) {
     doc.groups = doc.groups.filter(g => g.id !== gid);
