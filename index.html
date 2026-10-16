@@ -125,6 +125,8 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
 .editing .bt { box-shadow: inset 0 0 0 1px var(--line); border-radius: 4px; padding: 4px 8px; }
 .editing .bt:focus { box-shadow: inset 0 0 0 2px var(--accent); }
 .bt s { text-decoration-thickness: 1.5px; }
+/* Пометка группы: цвет текста и подсветка приходят из #gstyle (applyGroupStyles); на переносе строки края подсветки скругляются */
+.mk, .sum-text .gname { border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .cm { text-decoration: underline dotted var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; cursor: pointer; }
 .cm[data-n]::after { content: attr(data-n); font: 600 11px/1 var(--font-mono); color: var(--accent-fg); background: var(--accent); border-radius: 8px; padding: 2px 5px; margin-left: 3px; vertical-align: 3px; font-style: normal; }
 .note { border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 6px 6px 0; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 2px; }
@@ -161,7 +163,7 @@ figure input { font-size: 14px; font-style: italic; }
 .sum-item { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 2px 12px; text-align: left; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 10px 12px; background: none; min-height: 0; }
 .sum-item:first-child { border-top: 0; }
 .sum-item:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
-.sum-kind { font-weight: 700; font-size: 13px; }
+.sum-kind { font-weight: 700; font-size: 13px; justify-self: start; align-self: start; }
 .sum-text { font-family: var(--font-text); font-size: 16px; line-height: 1.45; min-width: 0; overflow-wrap: anywhere; }
 .sum-q { color: var(--muted); font-size: 13px; font-style: italic; }
 .sum-path { grid-column: 2; font-size: 12px; color: var(--muted); }
@@ -184,15 +186,22 @@ figure input { font-size: 14px; font-style: italic; }
 .mbox .warn { background: var(--warn-bg); border-radius: 6px; padding: 8px 10px; }
 .mbox textarea.big { min-height: 220px; font-family: var(--font-mono); font-size: 12.5px; }
 .mact { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-.grow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
-.grow input[type="color"] { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+/* Группы цветов (⋯ → «Группы цветов…»): название, «Удалить», ниже — цвет текста и подсветка, каждый с галочкой */
+.grow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); }
+.gopts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 2px 20px; align-items: center; }
+.gopt { display: flex; align-items: center; gap: 6px; }
+.gopt label { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; min-height: 34px; }
+.gopt input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.grow input[type="color"] { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); cursor: pointer; }
+.grow input[type="color"][data-off] { opacity: .35; }
+.gwarn { grid-column: 1 / -1; font-size: 12.5px; color: var(--danger); }
 .grow button[data-armed] { color: var(--danger); font-weight: 600; }
 /* Порядок кнопок на панели (⋯ → «Порядок кнопок на панели…») */
 .ord-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .ord { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; padding: 4px 6px 4px 10px; border-top: 1px solid var(--line); }
 .ord:first-child { border-top: 0; }
 .ord-n { font: 12px/1 var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.ord-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ord-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; justify-self: start; max-width: 100%; }
 .ord-name[data-g] { font-weight: 700; }
 .ord-b { min-width: 40px; min-height: 40px; padding: 0; font-size: 17px; line-height: 1; }
 .lb { position: fixed; inset: 0; z-index: 70; background: var(--lb-bg); color: var(--lb-fg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -307,7 +316,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     return {
       app: APP, format: FORMAT, seedVersion: SEED_VERSION, title: "Книга Тишины",
       updatedAt: null, updatedOn: "",
-      groups: DEFAULT_GROUPS.map(g => ({ ...g })),
+      groups: DEFAULT_GROUPS.map(g => fixGroup({ ...g })),
       parts: [
         mk("book", "Книга", BOOK, { title: "Книга Тишины", sub: "" }),
         mk("concept", "Концепция", CONCEPT),
@@ -487,7 +496,6 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function textOf(html) { const t = document.createElement("template"); t.innerHTML = html || ""; return t.content.textContent || ""; }
 
   function normalizeDoc(d) {
-    const okColor = c => /^#[0-9a-f]{6}$/i.test(c) ? c : "#888888";
     return {
       app: APP, format: FORMAT,
       seedVersion: Number(d.seedVersion) || 1,
@@ -495,7 +503,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       updatedAt: d.updatedAt || null,
       updatedOn: String(d.updatedOn || ""),
       groups: (Array.isArray(d.groups) ? d.groups : DEFAULT_GROUPS).filter(g => g && g.id)
-        .map(g => ({ id: String(g.id).replace(/[^\w-]/g, ""), name: String(g.name || "Группа"), color: okColor(g.color) })),
+        .map(g => fixGroup({ id: String(g.id).replace(/[^\w-]/g, ""), name: String(g.name || "Группа"), color: g.color, bg: g.bg, textOn: g.textOn, hlOn: g.hlOn })),
       parts: (Array.isArray(d.parts) ? d.parts : []).map(p => ({
         id: String(p.id || newId("p")).replace(/[^\w-]/g, ""),
         title: String(p.title || "Раздел"),
@@ -563,14 +571,55 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     return "#" + f(0) + f(8) + f(4);
   }
   function darkVariant(hex) { const [h, s, l] = hexToHsl(hex); return hslToHex(h, s, Math.min(.86, Math.max(.32, 1.08 - l))); }
+  // Подсветка для тёмной темы: светлый фон становится тёмным того же оттенка, чтобы светлые буквы на нём читались
+  // (жёлтый при той же светлоте ярче синего, поэтому темним до заданной яркости, а не до заданной светлоты)
+  function lum(hex) {
+    const ch = i => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+    return .2126 * ch(1) + .7152 * ch(3) + .0722 * ch(5);
+  }
+  function darkBg(hex) {
+    const [h, s] = hexToHsl(hex), S = Math.min(s, .6);
+    let l = .34, c = hslToHex(h, S, l);
+    while (l > .14 && lum(c) > .045) { l -= .01; c = hslToHex(h, S, l); }
+    return c;
+  }
+  // Цвет текста поверх тёмной подсветки: светлее обычного, чтобы буквы не сливались с фоном
+  function lightOnHl(hex) {
+    const [h, s] = hexToHsl(hex); let l = hexToHsl(darkVariant(hex))[2], c = darkVariant(hex);
+    while (l < .9 && lum(c) < .35) { l += .02; c = hslToHex(h, s, l); }
+    return c;
+  }
+  // Подсветка по умолчанию — бледный оттенок цвета группы (k — доля цвета, остальное белый)
+  function tint(hex, k) {
+    k = k == null ? .2 : k;
+    const c = i => Math.round(parseInt(hex.slice(i, i + 2), 16) * k + 255 * (1 - k)).toString(16).padStart(2, "0");
+    return "#" + c(1) + c(3) + c(5);
+  }
+  function okColor(c, d) { return /^#[0-9a-f]{6}$/i.test(c || "") ? c : d; }
+  // Группа: color — цвет текста, bg — подсветка (фон), textOn / hlOn — включены ли они.
+  // В старых данных подсветки нет — включаем её бледным оттенком цвета группы.
+  function fixGroup(g) {
+    g.color = okColor(g.color, "#888888");
+    g.bg = okColor(g.bg, tint(g.color));
+    g.textOn = g.textOn !== false;
+    g.hlOn = g.hlOn !== false;
+    return g;
+  }
   function applyGroupStyles() {
     let css = "";
+    const rule = (cls, a, pre, body) => cls.map(c => pre + c + a).join(",") + "{" + body + "}";
+    const themed = (cls, a, light, dark) => rule(cls, a, "", light) +
+      `@media (prefers-color-scheme: dark){${rule(cls, a, ':root:not([data-theme="light"]) ', dark)}}` +
+      rule(cls, a, ':root[data-theme="dark"] ', dark);
+    // нажатая кнопка-фильтр в «Сводке» выглядит как остальные нажатые кнопки (тёмная), иначе не видно, что она выбрана
+    const cls = [".mk", '.chip:not([aria-pressed="true"])', ".gname"];
     for (const g of doc.groups) {
-      const a = `[data-g="${g.id}"]`, D = darkVariant(g.color);
-      const sel = pre => [".mk", ".chip", ".gname"].map(c => pre + c + a).join(",");
-      css += `${sel("")}{color:${g.color}}`;
-      css += `@media (prefers-color-scheme: dark){${sel(':root:not([data-theme="light"]) ')}{color:${D}}}`;
-      css += `${sel(':root[data-theme="dark"] ')}{color:${D}}`;
+      const a = `[data-g="${g.id}"]`;
+      if (g.textOn) css += themed(cls, a, `color:${g.color}`, `color:${g.hlOn ? lightOnHl(g.color) : darkVariant(g.color)}`);
+      if (g.hlOn) {
+        css += themed(cls, a, `background-color:${g.bg}`, `background-color:${darkBg(g.bg)}`);
+        css += `.sum-kind${a},.ord-name${a}{padding:1px 6px;border-radius:4px}`;
+      }
     }
     $("#gstyle").textContent = css;
   }
@@ -1525,24 +1574,43 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const body = el("div"); body.style.display = "flex"; body.style.flexDirection = "column"; body.style.gap = "8px";
     const draw = () => {
       body.textContent = "";
-      body.append(para("Цвет задаёт цвет шрифта выделенного текста. Для тёмной темы оттенок подбирается сам.", "muted"));
+      body.append(para("У группы два цвета: «Текст» красит буквы выделенного, «Подсветка» — фон под ними, как маркером. Галочка включает и выключает каждый. Поле с названием показывает, как будет выглядеть пометка. Для тёмной темы оттенки подбираются сами.", "muted"));
       doc.groups.forEach(g => {
         const row = el("div", "grow");
-        const c = el("input"); c.type = "color"; c.value = g.color; c.setAttribute("aria-label", "Цвет группы " + g.name);
-        c.addEventListener("input", () => { g.color = c.value; applyGroupStyles(); touch(); });
         const n = el("input"); n.type = "text"; n.value = g.name; n.maxLength = 30; n.className = "gname"; n.dataset.g = g.id; n.setAttribute("aria-label", "Название группы");
         n.addEventListener("input", () => { g.name = n.value.trim() || "Группа"; touch(); });
         const del = btn("", "Удалить", () => {
           if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Точно?"; return; }
           removeGroup(g.id); draw();
         });
-        row.append(c, n, del); body.append(row);
+        const warn = el("span", "gwarn", "Без цвета текста и без подсветки пометку не видно в тексте.");
+        const sync = () => { warn.hidden = g.textOn || g.hlOn; };
+        // Галочка + цвет. Выбор цвета сам включает галочку.
+        const opt = (label, key, on) => {
+          const box = el("div", "gopt");
+          const lab = el("label"), cb = el("input");
+          cb.type = "checkbox"; cb.checked = g[on];
+          lab.append(cb, document.createTextNode(label));
+          const c = el("input"); c.type = "color"; c.value = g[key]; c.setAttribute("aria-label", `${label}: цвет группы ${g.name}`);
+          const paint = () => { c.toggleAttribute("data-off", !g[on]); sync(); applyGroupStyles(); touch(); };
+          cb.addEventListener("change", () => { g[on] = cb.checked; paint(); });
+          c.addEventListener("input", () => { g[key] = c.value; if (!g[on]) { g[on] = true; cb.checked = true; } paint(); });
+          c.toggleAttribute("data-off", !g[on]);
+          box.append(lab, c);
+          return box;
+        };
+        const opts = el("div", "gopts");
+        opts.append(opt("Текст", "color", "textOn"), opt("Подсветка", "bg", "hlOn"));
+        sync();
+        row.append(n, del, opts, warn); body.append(row);
       });
-      body.append(btn("", "+ Добавить группу", () => { doc.groups.push({ id: newId("g"), name: "Новая группа", color: "#7a5cc4" }); applyGroupStyles(); touch(); draw(); }));
+      body.append(btn("", "+ Добавить группу", () => { doc.groups.push(fixGroup({ id: newId("g"), name: "Новая группа", color: "#7a5cc4" })); applyGroupStyles(); touch(); draw(); }));
       body.append(para("При удалении группы её пометки снимаются с текста.", "muted"));
     };
     draw();
     openModal("Группы цветов", body, [{ label: "Готово", primary: true }], () => { renderToolbar(); renderView(true); renderTabs(); });
+    // фокус на «Готово», а не на поле названия: на телефоне не выскакивает клавиатура
+    const ok = modal.querySelector(".mact .primary"); if (ok) try { ok.focus({ preventScroll: true }); } catch (e) { }
   }
   function openTbOrder() {
     const list = el("div", "ord-list");
@@ -1681,9 +1749,10 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         let kind;
         if (it.k === "g") { kind = el("span", "sum-kind gname", groupName(it.g)); kind.dataset.g = it.g; }
         else kind = el("span", "sum-kind", { s: "Зачёркнуто", c: "Комментарий", n: "Заметка", i: "Картинка" }[it.k]);
-        const tx = el("span", "sum-text", short(it.text, 260));
+        const tx = el("span", "sum-text");
+        if (it.k === "g") { const m = el("span", "gname", short(it.text, 260)); m.dataset.g = it.g; tx.append(m); }
+        else tx.textContent = short(it.text, 260);
         if (it.k === "s") tx.style.textDecoration = "line-through";
-        if (it.k === "g") { tx.classList.add("gname"); tx.dataset.g = it.g; }
         if (it.k === "c" && it.quote) { tx.append(el("br")); tx.append(el("span", "sum-q", "«" + short(it.quote, 120) + "»")); }
         b.append(kind, tx, el("span", "sum-path", it.path));
         ul.append(b);

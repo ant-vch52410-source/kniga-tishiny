@@ -1,7 +1,7 @@
 // Service worker «Книги Тишины» (собран tools/telefon.py) — как у «Захвата»: держит файлы программы в кэше,
 // чтобы она открывалась без сети. «Сначала кэш»: файлы из кэша, сеть — только если файла там нет.
 // VERSION меняется сам при каждой сборке — телефон подхватывает новую версию при следующем открытии.
-const VERSION = 'kniga-2f75270b7c';
+const VERSION = 'kniga-27a7e88dfb';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (ev) => {
