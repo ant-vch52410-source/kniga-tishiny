@@ -91,7 +91,16 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
 .tb .js-sel:not(.ready) { border-style: dashed; }
 .chip { font-weight: 700; background: var(--bg); }
 #more { min-width: 40px; font-size: 18px; line-height: 1; padding: 4px 8px; }
-@media (max-width: 560px) { .tab { padding: 6px 6px; font-size: 13px; } .tab .cnt { margin-left: 3px; } }
+/* Закладки (задача 10): кнопка в строке вкладок; на телефоне — только значок */
+#bm-btn { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 4px 10px; }
+#bm-btn svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 560px) {
+  .tab { padding: 6px 6px; font-size: 13px; } .tab .cnt { margin-left: 3px; }
+  /* кнопка «Закладки» заняла место в строке вкладок — ужимаем отступы, чтобы вкладки по-прежнему влезали */
+  .tabsrow { gap: 4px; } .tabs { gap: 0; }
+  #bm-btn, #more { min-width: 36px; padding: 4px 6px; justify-content: center; } #bm-btn .lbl { display: none; }
+}
+@media (max-width: 420px) { .tab { padding-inline: 4px; } .tab .cnt { margin-left: 2px; } .tabsrow { gap: 3px; } #bm-btn, #more { min-width: 34px; padding-inline: 5px; } }
 
 /* Текст */
 #view { padding-block: 8px 120px; }
@@ -114,7 +123,10 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
 .sec-title { font-family: var(--font-text); font-size: 22px; line-height: 1.3; font-weight: 700; padding-block: 1px; outline: none; }
 .editing .sec-title { box-shadow: inset 0 0 0 1px var(--line); border-radius: 4px; padding-inline: 8px; }
 .editing .sec-title:focus { box-shadow: inset 0 0 0 2px var(--accent); }
-.row { padding-block: 3px; scroll-margin-top: 140px; border-radius: 6px; }
+.row { position: relative; padding-block: 3px; scroll-margin-top: 140px; border-radius: 6px; }
+/* Ленточка закладки — на поле слева от «⋯», чтобы не мешать тексту и кнопке */
+.bmk { position: absolute; left: -13px; top: 7px; width: 10px; height: 16px; color: var(--accent); pointer-events: none; }
+.bmk svg { display: block; width: 10px; height: 16px; }
 .hd { border: 0; background: none; padding: 0; width: 28px; height: 28px; min-height: 28px; color: var(--muted); font-size: 18px; line-height: 1; opacity: .5; border-radius: 6px; }
 .hd:hover:not(:disabled) { background: var(--surface); }
 .row:hover .hd, .row.cur .hd, .sec-head:hover .hd { opacity: 1; }
@@ -177,6 +189,7 @@ figure input { font-size: 14px; font-style: italic; }
 .pop hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
 .pop-lab { font-size: 12px; color: var(--muted); padding: 6px 10px 2px; }
 .pop-groups { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 6px 6px; }
+.pop-sub { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .modal { position: fixed; inset: 0; z-index: 60; background: var(--scrim); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); box-sizing: border-box; }
 .mbox { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; max-width: 560px; width: 100%; max-height: 100%; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
 .mbox h3 { font-size: 18px; }
@@ -204,6 +217,13 @@ figure input { font-size: 14px; font-style: italic; }
 .ord-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; justify-self: start; max-width: 100%; }
 .ord-name[data-g] { font-weight: 700; }
 .ord-b { min-width: 40px; min-height: 40px; padding: 0; font-size: 17px; line-height: 1; }
+/* Окно «Закладки» (кнопка «Закладки» → «Изменить закладки…»): где стоит, название, «Перейти», «Удалить» */
+.bm-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.bm-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); }
+.bm-row:first-child { border-top: 0; }
+.bm-path { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.bm-path.lost { color: var(--danger); }
+.bm-row button[data-armed] { color: var(--danger); font-weight: 600; }
 .lb { position: fixed; inset: 0; z-index: 70; background: var(--lb-bg); color: var(--lb-fg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .lb-bar { display: flex; gap: 8px; align-items: center; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
 .lb-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
@@ -240,7 +260,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   </div>
 </header>
 <div class="wrap">
-  <p class="intro">Выдели текст и выбери на панели цвет группы, «Зачеркнуть», «Комментарий» или «Удалить». Кнопка «⋯» слева от абзаца открывает действия с ним. Всё сохраняется на этом устройстве, а на другое устройство переносится файлом через Телеграм.</p>
+  <p class="intro">Выдели текст и выбери на панели цвет группы, «Зачеркнуть», «Комментарий» или «Удалить». Кнопка «⋯» слева от абзаца открывает действия с ним. Каждая вкладка открывается там, где ты остановился, а кнопка «Закладки» ведёт к отмеченным местам и разделам. Всё сохраняется на этом устройстве, а на другое устройство переносится файлом через Телеграм.</p>
   <div id="seed-banner" class="banner" hidden>
     <span id="seed-text">Claude обновил текст в этой странице. Загрузить новую версию? Твои текущие данные сохранятся в резервной копии.</span>
     <button id="seed-load" type="button" class="primary">Загрузить новую версию</button>
@@ -258,6 +278,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 <div class="top">
   <div class="wrap tabsrow">
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+    <button id="bm-btn" type="button" aria-haspopup="menu" aria-label="Закладки" title="Закладки и разделы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><span class="lbl">Закладки</span></button>
     <button id="more" type="button" aria-haspopup="menu" aria-label="Ещё" title="Ещё">⋯</button>
   </div>
   <div class="wrap"><div class="tb" id="tb" role="toolbar" aria-label="Пометки"></div></div>
@@ -317,6 +338,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       app: APP, format: FORMAT, seedVersion: SEED_VERSION, title: "Книга Тишины",
       updatedAt: null, updatedOn: "",
       groups: DEFAULT_GROUPS.map(g => fixGroup({ ...g })),
+      bm: [],
       parts: [
         mk("book", "Книга", BOOK, { title: "Книга Тишины", sub: "" }),
         mk("concept", "Концепция", CONCEPT),
@@ -357,6 +379,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   let sumFilter = "all";
   let seedDismissed = false;
   const SUM = "__sum";
+  // Место чтения запоминаем только после загрузки данных устройства, иначе стартовый текст затёр бы сохранённое место
+  let posReady = false;
+  let posTimer = null;
+  let posLast = "";
+  let posHold = 0;
+  let backPos = null;
 
   // ---------- Хранилище: IndexedDB браузера или папка проекта (окно на компьютере) ----------
   const httpStore = {
@@ -442,6 +470,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       try { const raw = localStorage.getItem("kt-prefs"); if (raw) prefs = { ...prefs, ...JSON.parse(raw) }; } catch (e3) { }
     }
     if (prefs.tab !== SUM && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
+    posLast = JSON.stringify(prefs.pos || {});
+    posReady = true;
     renderAll();
     gcImages();
   }
@@ -504,6 +534,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       updatedOn: String(d.updatedOn || ""),
       groups: (Array.isArray(d.groups) ? d.groups : DEFAULT_GROUPS).filter(g => g && g.id)
         .map(g => fixGroup({ id: String(g.id).replace(/[^\w-]/g, ""), name: String(g.name || "Группа"), color: g.color, bg: g.bg, textOn: g.textOn, hlOn: g.hlOn })),
+      // Закладки: id абзаца + начало его текста и название раздела (по ним закладка находится после новой версии текста)
+      bm: (Array.isArray(d.bm) ? d.bm : []).filter(k => k && k.id).map(k => ({
+        id: String(k.id).replace(/[^\w-]/g, ""), name: String(k.name || "").slice(0, 80), at: k.at || null,
+        part: String(k.part || "").replace(/[^\w-]/g, ""), bid: String(k.bid || "").replace(/[^\w-]/g, ""),
+        sec: String(k.sec || ""), snip: String(k.snip || "").slice(0, 80)
+      })),
       parts: (Array.isArray(d.parts) ? d.parts : []).map(p => ({
         id: String(p.id || newId("p")).replace(/[^\w-]/g, ""),
         title: String(p.title || "Раздел"),
@@ -625,7 +661,11 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
 
   // ---------- Отрисовка ----------
-  function renderAll() { applyGroupStyles(); renderTabs(); renderToolbar(); renderView(); renderStatus(); checkBanners(); }
+  function renderAll() {
+    reanchorBm();
+    applyGroupStyles(); renderTabs(); renderToolbar(); renderView(); renderStatus(); checkBanners();
+    if (posReady) restorePosSoon();
+  }
 
   function renderStatus() {
     const st = $("#status");
@@ -667,10 +707,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     if (prefs.tab === SUM) s.setAttribute("aria-current", "page");
     t.append(s);
   }
+  // Каждая вкладка открывается там, где на ней остановился (место своё на каждом устройстве)
   function switchTab(id) {
     if (prefs.tab === id) return;
+    savePos();
     prefs.tab = id; savePrefs(); curBlock = null; clearSel();
-    renderTabs(); renderToolbar(); renderView(); window.scrollTo(0, 0);
+    renderTabs(); renderToolbar(); renderView(); restorePosSoon();
   }
 
   // Кнопки панели пометок в обычном порядке. key — имя кнопки в сохранённом порядке, cat — кучка между разделителями.
@@ -770,7 +812,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       const det = el("details", "toc"); det.append(el("summary", "", "Оглавление"));
       const ol = el("ol");
       for (const s of p.sections) {
-        const li = el("li"); li.append(btn("", s.title || "Без названия", () => { const x = document.getElementById("s-" + s.id); if (x) x.scrollIntoView({ block: "start" }); }));
+        const li = el("li"); li.append(btn("", s.title || "Без названия", () => goTo({ p, s, b: null })));
         ol.append(li);
       }
       det.append(ol); m.append(det); g.append(el("span"), m); v.append(g);
@@ -855,6 +897,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       side.append(renderCallout(b, c, anch, quote));
     }
     row.append(hd, main, side);
+    if (bmAt(b.id)) paintBm(row, true);
     return row;
   }
 
@@ -1231,6 +1274,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     pop.textContent = "";
     for (const it of items) {
       if (it.sep) { pop.append(el("hr")); continue; }
+      if (it.lab) { pop.append(el("div", "pop-lab", it.lab)); continue; }
       if (it.type === "groups") {
         pop.append(el("div", "pop-lab", it.label));
         const row = el("div", "pop-groups");
@@ -1238,6 +1282,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         pop.append(row); continue;
       }
       const b = btn("pop-item" + (it.danger ? " danger" : ""), it.label);
+      if (it.sub) b.append(el("span", "pop-sub", it.sub));
       b.setAttribute("role", "menuitem");
       b.disabled = !!it.disabled;
       b.addEventListener("click", () => {
@@ -1266,7 +1311,11 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function openBlockMenu(bid, anchorBtn) {
     setCur(bid);
     const f = findBlock(bid); if (!f) return;
-    const items = [{ label: "Комментарий к блоку", fn: () => addBlockComment(bid) }];
+    const k = bmAt(bid);
+    const items = [
+      k ? { label: "Убрать закладку", fn: () => removeBm(k.id) } : { label: "Поставить закладку", fn: () => addBm(bid) },
+      { label: "Комментарий к блоку", fn: () => addBlockComment(bid) }
+    ];
     if (f.b.t === "p") {
       items.push({ type: "groups", label: "Пометить весь абзац", fn: gid => { const rs = wholeRange(bid); if (rs.length) applyGroup(gid, rs); else toast("Абзац пустой"); } });
       items.push({ label: "Зачеркнуть весь абзац", fn: () => { const rs = wholeRange(bid); if (rs.length) strike(rs); else toast("Абзац пустой"); } });
@@ -1493,7 +1542,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
 
   function stats(d) {
-    const st = { marks: 0, s: 0, c: 0, img: 0, sec: 0 };
+    const st = { marks: 0, s: 0, c: 0, img: 0, sec: 0, bm: Array.isArray(d.bm) ? d.bm.length : 0 };
     for (const p of d.parts || []) for (const s of p.sections || []) {
       st.sec++;
       for (const b of s.blocks || []) {
@@ -1504,7 +1553,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     }
     return st;
   }
-  function statLine(st) { return `разделов ${st.sec}, цветных пометок ${st.marks}, зачёркиваний ${st.s}, комментариев ${st.c}, картинок ${st.img}`; }
+  function statLine(st) { return `разделов ${st.sec}, цветных пометок ${st.marks}, зачёркиваний ${st.s}, комментариев ${st.c}, картинок ${st.img}, закладок ${st.bm}`; }
 
   function pickJSON() { const i = $("#jsonfile"); i.value = ""; i.click(); }
   $("#b-import").addEventListener("click", () => pickJSON());
@@ -1551,13 +1600,15 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function openReset() {
     openModal("Начать заново с исходного текста?", para("Текст вернётся к последней версии от Claude (с оставленными в ней пометками и комментариями), твои правки после неё и картинки уберутся. Текущие данные сохранятся в резервной копии: «Ещё» → «Вернуть как было до импорта»."), [
-      { label: "Начать заново", primary: true, fn: () => { (async () => { await backupCurrent(); const g = doc.groups; doc = buildSeed(); doc.groups = g; touch(); undoStack = []; renderAll(); toast("Исходный текст загружен"); })(); } },
+      { label: "Начать заново", primary: true, fn: () => { (async () => { await backupCurrent(); const g = doc.groups, bm = doc.bm; doc = buildSeed(); doc.groups = g; doc.bm = bm; touch(); undoStack = []; renderAll(); toast("Исходный текст загружен"); })(); } },
       { label: "Отмена" }
     ]);
   }
   $("#seed-load").addEventListener("click", async () => {
     await backupCurrent();
-    doc = buildSeed(); touch(); undoStack = []; renderAll(); toast("Новая версия текста загружена");
+    // закладки переходят в новую версию: renderAll → reanchorBm находит их абзацы по началу текста
+    const bm = doc.bm;
+    doc = buildSeed(); doc.bm = bm; touch(); undoStack = []; renderAll(); toast("Новая версия текста загружена");
   });
   $("#seed-later").addEventListener("click", () => { seedDismissed = true; checkBanners(); });
 
@@ -1762,6 +1813,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     v.append(wrap);
   }
   function jumpTo(pid, bid) {
+    savePos();
     prefs.tab = pid; savePrefs(); curBlock = bid;
     renderTabs(); renderToolbar(); renderView();
     requestAnimationFrame(() => {
@@ -1769,6 +1821,215 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       if (row) { row.scrollIntoView({ block: "center" }); flash(row); }
     });
   }
+
+  // ---------- Закладки и место чтения (задача 10) ----------
+  // Место в тексте: { part, bid, sec, snip } — id абзаца, название раздела и начало текста абзаца. В новой версии
+  // текста от Claude id абзацев другие, поэтому место ищется по началу текста, затем по названию раздела.
+  const BM_ICON = '<svg viewBox="0 0 10 16" aria-hidden="true"><path d="M0 0h10v16L5 12 0 16z" fill="currentColor"/></svg>';
+  function blockText(b) { return oneLine(b.t === "p" ? textOf(b.html) : b.t === "note" ? b.text : b.cap || ""); }
+  function refOf(f) { return { part: f.p.id, bid: f.b.id, sec: f.s.title || "", snip: blockText(f.b).slice(0, 80) }; }
+  function locate(ref) {
+    if (!ref) return null;
+    const f = ref.bid ? findBlock(ref.bid) : null;
+    const key = (ref.snip || "").slice(0, 40);
+    if (f && (!key || blockText(f.b).startsWith(key))) return f;
+    const parts = [...doc.parts].sort((a, b) => (b.id === ref.part) - (a.id === ref.part));
+    if (key.length >= 8) {
+      for (const strong of [true, false]) for (const p of parts) for (const s of p.sections) for (let i = 0; i < s.blocks.length; i++) {
+        const t = blockText(s.blocks[i]);
+        if (strong ? t.startsWith(key) : t.includes(key)) return { p, s, b: s.blocks[i], i };
+      }
+    }
+    // абзац переписан и в другом разделе — к началу прежнего раздела; переписан на месте — остаёмся на нём
+    if (ref.sec && !(f && f.s.title === ref.sec)) for (const p of parts) for (const s of p.sections)
+      if (s.title === ref.sec) return s.blocks.length ? { p, s, b: s.blocks[0], i: 0 } : { p, s, b: null, i: -1 };
+    return f;
+  }
+  // Найти место и запомнить его заново (новый id, новое начало текста). Возвращает найденное и было ли изменение.
+  function fixRef(ref) {
+    const f = locate(ref);
+    if (!f || !f.b) return { f, ch: false };
+    const n = refOf(f), ch = n.bid !== ref.bid || n.snip !== ref.snip || n.sec !== ref.sec || n.part !== ref.part;
+    Object.assign(ref, n);
+    return { f, ch };
+  }
+  function reanchorBm() { (doc.bm || (doc.bm = [])).forEach(k => fixRef(k)); }
+  function bmAt(bid) { return (doc.bm || []).find(k => k.bid === bid) || null; }
+  function bmLabel(k) { return k.name || short(k.snip, 60) || "Закладка"; }
+  function bmPath(k, f) {
+    const p = f ? f.p : doc.parts.find(q => q.id === k.part);
+    return [p && p.title, f ? (f.s.title || "Без названия") : k.sec].filter(Boolean).join(" › ");
+  }
+  // Закладки по порядку в тексте; потерянные — в конце
+  function bmSorted() {
+    const at = new Map(); let n = 0;
+    for (const p of doc.parts) for (const s of p.sections) for (const b of s.blocks) at.set(b.id, n++);
+    return [...(doc.bm || [])].sort((a, b) => (at.get(a.bid) ?? 1e9) - (at.get(b.bid) ?? 1e9));
+  }
+  function paintBm(row, on) {
+    row.classList.toggle("bm", on);
+    let m = row.querySelector(":scope > .bmk");
+    if (on && !m) { m = el("span", "bmk"); m.innerHTML = BM_ICON; row.append(m); }
+    if (!on && m) m.remove();
+  }
+  function repaintBm(bid) { const row = bid && document.querySelector(`#view .row[data-bid="${bid}"]`); if (row) paintBm(row, !!bmAt(bid)); }
+  function addBm(bid) {
+    const f = findBlock(bid); if (!f) return;
+    if (bmAt(bid)) { toast("Здесь уже есть закладка"); return; }
+    doc.bm.push({ id: newId("k"), name: "", at: nowISO(), ...refOf(f) });
+    touch(); repaintBm(bid);
+    toast("Закладка: «" + (short(blockText(f.b), 40) || f.s.title || "абзац") + "»");
+  }
+  function removeBm(id) {
+    const k = doc.bm.find(x => x.id === id); if (!k) return;
+    doc.bm = doc.bm.filter(x => x !== k);
+    touch(); repaintBm(k.bid); toast("Закладка убрана");
+  }
+
+  // Липкая панель: где её низ сейчас и где он, когда она прилипла к верху
+  function barNow() { const t = document.querySelector(".top"); return t ? t.getBoundingClientRect().bottom : 0; }
+  function barStuck() { const t = document.querySelector(".top"); return t ? (parseFloat(getComputedStyle(t).top) || 0) + t.offsetHeight : 0; }
+  // Первый абзац, который виден под панелью (абзацы идут сверху вниз — ищем делением пополам);
+  // хвост предыдущего абзаца в несколько пикселей не считается
+  function readingRow() {
+    const top = barNow() + 12, rows = document.querySelectorAll("#view .row");
+    let lo = 0, hi = rows.length - 1, hit = -1;
+    while (lo <= hi) { const m = (lo + hi) >> 1; if (rows[m].getBoundingClientRect().bottom > top) { hit = m; hi = m - 1; } else lo = m + 1; }
+    return hit >= 0 ? rows[hit] : null;
+  }
+  function readingPos() {
+    const y = Math.round(window.scrollY);
+    if (prefs.tab === SUM || barNow() > barStuck() + 2) return { y };   // в самом верху страницы хватает прокрутки
+    const row = readingRow(), f = row && findBlock(row.dataset.bid);
+    if (!f) return { y };
+    return { ...refOf(f), dy: Math.round(row.getBoundingClientRect().top - barNow()), y };
+  }
+  // Запомнить, где сейчас читаешь (в настройках этого устройства, не в данных книги — красной точки у «Экспорта» не будет)
+  function savePos() {
+    clearTimeout(posTimer); posTimer = null;
+    if (!posReady) return;
+    prefs.pos = { ...(prefs.pos || {}), [prefs.tab]: readingPos() };
+    const s = JSON.stringify(prefs.pos);
+    if (s !== posLast) { posLast = s; savePrefs(); }
+  }
+  function restorePos(pos) {
+    pos = pos || (prefs.pos && prefs.pos[prefs.tab]);
+    if (!pos) { window.scrollTo(0, 0); return; }
+    if (prefs.tab !== SUM && (pos.bid || pos.snip)) {
+      const f = locate(pos);
+      if (f && f.p.id === prefs.tab) {
+        const node = f.b ? document.querySelector(`#view .row[data-bid="${f.b.id}"]`) : document.getElementById("s-" + f.s.id);
+        if (node) {
+          // тот же абзац (по id или, после новой версии текста, по началу текста) — с тем же сдвигом, иначе чуть ниже панели
+          const same = f.b && (f.b.id === pos.bid || (!!pos.snip && blockText(f.b).startsWith(pos.snip.slice(0, 40))));
+          const dy = same ? pos.dy || 0 : 8;
+          window.scrollTo(0, Math.max(0, window.scrollY + node.getBoundingClientRect().top - barStuck() - dy));
+          return;
+        }
+      }
+    }
+    window.scrollTo(0, pos.y || 0);
+  }
+  // Пока подгружается шрифт текста, строки переносятся иначе — повторяем, если ты ещё не начал листать сам
+  function restorePosSoon(pos) {
+    restorePos(pos);
+    const t = posHold = Date.now() + 2500;
+    const again = () => { if (posHold === t && Date.now() < t) restorePos(pos); };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(again));
+    setTimeout(again, 400); setTimeout(again, 1200);
+  }
+  ["wheel", "touchstart", "keydown", "pointerdown"].forEach(t => window.addEventListener(t, () => { posHold = 0; }, { passive: true, capture: true }));
+  window.addEventListener("scroll", () => { if (posReady) { clearTimeout(posTimer); posTimer = setTimeout(savePos, 700); } }, { passive: true });
+  try { history.scrollRestoration = "manual"; } catch (e) { }
+
+  // Перейти к абзацу или разделу (f — из locate/findBlock; b: null — к разделу). Прежнее место — для «Вернуться».
+  function goTo(f) {
+    savePos();
+    backPos = { tab: prefs.tab, pos: prefs.pos && prefs.pos[prefs.tab] };
+    if (prefs.tab !== f.p.id) { prefs.tab = f.p.id; savePrefs(); clearSel(); renderTabs(); renderToolbar(); renderView(); }
+    posHold = 0;
+    const node = f.b ? document.querySelector(`#view .row[data-bid="${f.b.id}"]`) : document.getElementById("s-" + f.s.id);
+    if (!node) return;
+    // абзац — сразу под панелью, а не по scroll-margin: так он сам становится местом, где читаешь
+    window.scrollTo(0, Math.max(0, window.scrollY + node.getBoundingClientRect().top - barStuck() - 8));
+    if (f.b) { setCur(f.b.id); flash(node); }
+  }
+  function goBack() {
+    const b = backPos; if (!b) return;
+    savePos();
+    backPos = { tab: prefs.tab, pos: prefs.pos && prefs.pos[prefs.tab] };
+    if (prefs.tab !== b.tab) { prefs.tab = b.tab; savePrefs(); curBlock = null; clearSel(); renderTabs(); renderToolbar(); renderView(); }
+    restorePosSoon(b.pos || { y: 0 });
+  }
+  function goBm(k) {
+    const { f, ch } = fixRef(k);
+    if (ch) scheduleSave();
+    if (!f) { toast("Абзац этой закладки удалён. Её можно убрать в «Изменить закладки…»"); return; }
+    goTo(f);
+  }
+  // Абзац «здесь»: выбранный, если он на экране, иначе первый видимый под панелью
+  function hereBlock() {
+    if (prefs.tab === SUM) return null;
+    if (curBlock) {
+      const row = document.querySelector(`#view .row[data-bid="${curBlock}"]`);
+      if (row) { const r = row.getBoundingClientRect(); if (r.bottom > barNow() && r.top < window.innerHeight) return findBlock(curBlock); }
+    }
+    const row = readingRow(); return row ? findBlock(row.dataset.bid) : null;
+  }
+  function openBmMenu() {
+    const anchor = $("#bm-btn"), items = [];
+    if (prefs.tab !== SUM) {
+      const f = hereBlock(), k = f && bmAt(f.b.id);
+      if (k) items.push({ label: "Убрать закладку здесь", sub: bmLabel(k), fn: () => removeBm(k.id) });
+      else items.push({ label: "Поставить закладку здесь", sub: f ? (short(blockText(f.b), 60) || f.s.title) : "", disabled: !f, fn: () => addBm(f.b.id) });
+    }
+    if (backPos) items.push({ label: "Вернуться, где был", fn: goBack });
+    const sep = () => { if (items.length && !items[items.length - 1].sep) items.push({ sep: true }); };
+    const list = bmSorted();
+    if (list.length) {
+      sep(); items.push({ lab: "Закладки" });
+      for (const k of list) { const f = locate(k); items.push({ label: bmLabel(k), sub: f ? bmPath(k, f) : "абзац удалён", fn: () => goBm(k) }); }
+    }
+    const p = curPart();
+    sep();
+    if (p && p.sections.length > 1) items.push({ label: "К разделу…", fn: () => openSecMenu() });
+    if (prefs.tab !== SUM) items.push({ label: "В начало вкладки", fn: () => { savePos(); backPos = { tab: prefs.tab, pos: prefs.pos && prefs.pos[prefs.tab] }; posHold = 0; window.scrollTo(0, 0); } });
+    if (list.length) items.push({ label: "Изменить закладки…", fn: openBmEdit });
+    if (items.length && items[items.length - 1].sep) items.pop();
+    if (!items.length) items.push({ label: "Закладки ставятся на вкладках с текстом", disabled: true, fn: () => { } });
+    openPop(anchor, items);
+  }
+  function openSecMenu() {
+    const p = curPart(); if (!p) return;
+    const cur = (() => { const r = readingRow(), f = r && findBlock(r.dataset.bid); return f ? f.s.id : null; })();
+    openPop($("#bm-btn"), [{ lab: p.title + ": разделы" }, ...p.sections.map(s => ({ label: (s.id === cur ? "▸ " : "") + (s.title || "Без названия"), fn: () => goTo({ p, s, b: null }) }))]);
+  }
+  function openBmEdit() {
+    const list = el("div", "bm-list");
+    const draw = () => {
+      list.textContent = "";
+      const all = bmSorted();
+      if (!all.length) { list.append(para("Закладок нет. Поставить закладку: кнопка «Закладки» → «Поставить закладку здесь» или «⋯» у абзаца.", "muted")); list.style.border = "0"; return; }
+      for (const k of all) {
+        const f = locate(k), row = el("div", "bm-row");
+        const path = el("span", "bm-path" + (f ? "" : " lost"), f ? bmPath(k, f) : "Абзац этой закладки удалён");
+        const n = el("input"); n.type = "text"; n.value = k.name || ""; n.maxLength = 80;
+        n.placeholder = short(k.snip, 60) || "Закладка"; n.setAttribute("aria-label", "Название закладки");
+        n.addEventListener("input", () => { k.name = n.value.trim(); touch(); });
+        const go = btn("", "Перейти", () => { closeModal(); goBm(k); }); go.disabled = !f;
+        const del = btn("", "Удалить", () => {
+          if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Точно?"; return; }
+          doc.bm = doc.bm.filter(x => x !== k); touch(); repaintBm(k.bid); draw();
+        });
+        row.append(path, n, go, del); list.append(row);
+      }
+    };
+    draw();
+    openModal("Закладки", frag(para("Без названия закладка называется началом своего абзаца. Закладки переносятся на другое устройство вместе с файлом «Экспорт», а место, где ты остановился, у каждого устройства своё.", "muted"), list), [{ label: "Готово", primary: true }]);
+    // фокус на «Готово», а не на поле названия: на телефоне не выскакивает клавиатура
+    const ok = modal.querySelector(".mact .primary"); if (ok) try { ok.focus({ preventScroll: true }); } catch (e) { }
+  }
+  $("#bm-btn").addEventListener("click", openBmMenu);
 
   // ---------- Панель: не терять выделение при нажатии ----------
   $("#tb").addEventListener("pointerdown", e => {
@@ -1793,8 +2054,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   let toastT = null;
   function toast(t) { const x = $("#toast"); x.textContent = t; x.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => x.classList.remove("on"), 2600); }
 
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && saveTimer) saveNow(); });
-  window.addEventListener("pagehide", () => { if (saveTimer) saveNow(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { if (posTimer) savePos(); if (saveTimer) saveNow(); } });
+  window.addEventListener("pagehide", () => { if (posTimer) savePos(); if (saveTimer) saveNow(); });
 
   // ---------- Тема: ☀ — переключить на светлую, ☾ — на тёмную; выбор помнится (как в Карте задач) ----------
   const THEME_ICON = {
