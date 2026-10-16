@@ -305,8 +305,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   const APP = "kniga-tishiny";
   const FORMAT = 1;
-  // Номер версии текста, встроенного в страницу. Claude увеличивает его, когда присылает новый текст.
-  const SEED_VERSION = 2;
+  // Формат текста от Claude. С версии 3 (задача 11) главы обновляются по отдельности: страница сравнивает каждую
+  // главу с тем, что уже загружено (doc.seedSeen), и предлагает только изменённые и новые. Номер больше менять не нужно.
+  const SEED_VERSION = 3;
   // Телефонная версия — сайт на GitHub Pages, ставится на главный экран, как «Захват». В ней нет текста книги:
   // текст и пометки приходят «Импортом» файла с компьютера. true ставит сборка tools\telefon.py, здесь не менять.
   const SITE = true;
@@ -320,19 +321,18 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   ];
 
   // ---------- Исходный текст ----------
-  // Абзац — строка HTML или { html, cm: [комментарии] }: так в новую версию переходят нерешённые комментарии автора.
+  // BOOK и CONCEPT собирает tools\tekst.py из папки «Текст» (одна глава — один файл). Здесь их руками не править:
+  // следующая сборка всё перезапишет. Раздел: { key, title, blocks }; блок — строка HTML абзаца
+  // или { html, cm } / { t: "note", text, cm } / { t: "img", img, cap }; cm — комментарии автора, которые переходят в новую версию.
   const BOOK = [];
 
   const CONCEPT = [];
 
   function buildSeed() {
-    let n = 0;
-    const id = p => p + (++n).toString(36);
+    const seen = {};
     const mk = (pid, title, arr, head) => ({
       id: pid, title, head: head || null,
-      sections: arr.map(([t, ps]) => ({ id: id("s"), title: t, blocks: ps.map(h => typeof h === "string"
-        ? { id: id("b"), t: "p", html: h, cm: [] }
-        : { id: id("b"), t: "p", html: h.html, cm: (h.cm || []).map(c => ({ ...c })) }) }))
+      sections: arr.map(e => { const it = seedItem(pid, e), s = seedSection(it); seen[e.key] = { h: it.h, t: hashStr(canonText(s)) }; return s; })
     });
     return {
       app: APP, format: FORMAT, seedVersion: SEED_VERSION, title: "Книга Тишины",
@@ -342,9 +342,154 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       parts: [
         mk("book", "Книга", BOOK, { title: "Книга Тишины", sub: "" }),
         mk("concept", "Концепция", CONCEPT),
-        { id: "mat", title: "Материалы", head: null, sections: [{ id: id("s"), title: "Карты и картинки", blocks: [] }] }
-      ]
+        { id: "mat", title: "Материалы", head: null, sections: [{ id: "mat1", title: "Карты и картинки", blocks: [] }] }
+      ],
+      // в телефонной версии текста нет — там и отмечать нечего (данные о загруженных главах приходят с «Импортом»)
+      seedSeen: SITE ? undefined : seen
     };
+  }
+
+  // ---------- Главы от Claude по отдельности (задача 11) ----------
+  // У каждой главы из папки «Текст» свой ключ (key). doc.seedSeen[key] = { h, t }: h — какую версию главы от Claude
+  // уже загрузили, t — как глава выглядела сразу после загрузки (чтобы предупредить, что в ней есть свои пометки).
+  function hashStr(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36); }
+  function seedItem(pid, e) { return { pid, e, h: hashStr(JSON.stringify([e.title, e.blocks])) }; }
+  function seedEntries() { return [...BOOK.map(e => seedItem("book", e)), ...CONCEPT.map(e => seedItem("concept", e))]; }
+  // Глава от Claude → раздел страницы; id абзацев меняются с каждой новой версией главы, чтобы не совпасть с прежними
+  function seedSection(it) {
+    const pre = it.e.key + "-" + it.h.slice(0, 4) + "-"; let n = 0;
+    return {
+      id: it.e.key, key: it.e.key, title: it.e.title,
+      blocks: it.e.blocks.map(x => {
+        const b = typeof x === "string" ? { t: "p", html: x } : x;
+        const o = { id: pre + (++n).toString(36), t: b.t || "p", cm: (b.cm || []).map(c => ({ id: c.id, text: c.text || "", at: c.at || null, block: !!c.block })) };
+        if (o.t === "p") o.html = b.html || "";
+        if (o.t === "note") o.text = b.text || "";
+        if (o.t === "img") { o.img = b.img || ""; o.cap = b.cap || ""; }
+        return o;
+      })
+    };
+  }
+
+  // Раздел → текст в формате файлов папки «Текст» (Текст/README.md). Так же его пишет tools\tekst.py — одинаково
+  // до символа, поэтому страница и скрипт понимают, совпадает ли глава. Группы — по названиям (для Claude) или по id.
+  function mdEsc(t) { return t.replace(/[\\*_\[\]{}~]/g, "\\$&"); }
+  function tidyLines(t) { return String(t || "").split("\n").map(l => l.replace(/\s+$/, "")).join("\n").trim(); }
+  function inlineMd(html, gname, cmNum) {
+    const t = document.createElement("template"); t.innerHTML = html || "";
+    const rec = node => {
+      let out = "";
+      for (const c of node.childNodes) {
+        if (c.nodeType === 3) { out += mdEsc(c.textContent); continue; }
+        if (c.nodeType !== 1) continue;
+        const tag = c.tagName;
+        if (tag === "BR") { out += "\n"; continue; }
+        const inner = rec(c);
+        if (!inner) continue;
+        if (tag === "B" || tag === "STRONG") out += "**" + inner + "**";
+        else if (tag === "I" || tag === "EM") out += "_" + inner + "_";
+        else if (tag === "S" || tag === "STRIKE" || tag === "DEL") out += "~~" + inner + "~~";
+        else if (tag === "SPAN" && c.classList.contains("mk") && c.dataset.g) out += "[" + gname(c.dataset.g) + ": " + inner + "]";
+        else if (tag === "SPAN" && c.classList.contains("cm") && c.dataset.c) { const k = cmNum(c.dataset.c); out += k ? "{" + inner + "}[^" + k + "]" : inner; }
+        else out += inner;
+      }
+      return out;
+    };
+    return rec(t.content);
+  }
+  function sectionText(s, opts) {
+    opts = opts || {};
+    const gname = opts.gname || groupName;
+    const L = [];
+    if (opts.head !== false) L.push("---", "id: " + (s.key || s.id), "---");
+    L.push("# " + (s.title || "Без названия").replace(/\s+/g, " ").trim());
+    const notes = []; let n = 0;
+    for (const b of s.blocks || []) {
+      const cmap = new Map((b.cm || []).filter(c => c && c.id).map(c => [c.id, c]));
+      const nums = new Map();
+      const cmNum = cid => {
+        if (!cmap.has(cid)) return null;
+        if (!nums.has(cid)) { nums.set(cid, String(++n)); notes.push([String(n), cmap.get(cid).text || ""]); }
+        return nums.get(cid);
+      };
+      let lines;
+      if (b.t === "p") {
+        const md = tidyLines(inlineMd(b.html || "", gname, cmNum));
+        lines = md ? md.split("\n").map(l => !l ? "\\" : ("<>#!".includes(l[0]) ? "\\" + l : l)) : [];
+      } else if (b.t === "note") {
+        const txt = tidyLines(b.text);
+        lines = txt ? txt.split("\n").map(l => l ? "> " + l : ">") : [];
+      } else if (b.t === "img") {
+        lines = ["![" + String(b.cap || "").replace(/\s+/g, " ").trim() + "](img:" + (b.img || "") + ")"];
+      } else continue;
+      const bare = [...cmap.keys()].filter(c => !nums.has(c)).map(cmNum);
+      if (!lines.length && !bare.length) continue;
+      if (!lines.length) lines = [b.t === "note" ? ">" : "\\"];
+      L.push("", ...lines);
+      if (bare.length) L.push(bare.map(x => `[^${x}]`).join(" "));
+    }
+    if (notes.length) {
+      L.push("");
+      for (const [num, text] of notes) {
+        const parts = tidyLines(text).split("\n");
+        L.push(`[^${num}]: ` + parts[0], ...parts.slice(1).map(p => p ? "    " + p : "    "));
+      }
+    }
+    return L.join("\n") + "\n";
+  }
+  function canonText(s) { return sectionText(s, { gname: id => id, head: false }); }
+  function partFolder(p) { return p.id === "book" ? "Книга" : p.id === "concept" ? "Концепция" : p.title; }
+
+  let seedPending = [];
+  function seedSecOf(key) {
+    for (const p of doc.parts) { const i = p.sections.findIndex(x => (x.key || x.id) === key); if (i >= 0) return { p, s: p.sections[i], i }; }
+    return null;
+  }
+  // Какие главы Claude изменил или добавил с прошлой загрузки. Данные, где ещё нет seedSeen (до задачи 11),
+  // считаются загруженными полностью: их главы ничем не заменяются. В телефонной версии текста от Claude нет.
+  function prepSeed() {
+    seedPending = [];
+    const items = SITE ? [] : seedEntries();
+    if (!items.length) return;
+    let changed = false;
+    if (!doc.seedSeen || typeof doc.seedSeen !== "object") {
+      doc.seedSeen = {};
+      for (const it of items) { const f = seedSecOf(it.e.key); if (f) { f.s.key = it.e.key; doc.seedSeen[it.e.key] = { h: it.h, t: hashStr(canonText(f.s)) }; } }
+      changed = true;
+    }
+    for (const it of items) {
+      const k = it.e.key, seen = doc.seedSeen[k];
+      if (seen && seen.h === it.h) continue;
+      const f = seedSecOf(k), nt = canonText(seedSection(it)), ct = f ? canonText(f.s) : null;
+      // глава у тебя уже точно такая же — просто запомнить версию
+      if (f && ct === nt) { f.s.key = k; doc.seedSeen[k] = { h: it.h, t: hashStr(nt) }; changed = true; continue; }
+      seedPending.push({ it, isNew: !f, own: !!f && (!seen || hashStr(ct) !== seen.t), title: it.e.title });
+    }
+    if (changed && posReady) scheduleSave();
+  }
+  async function applySeed() {
+    const list = seedPending.slice(); if (!list.length) return;
+    await backupCurrent();
+    const order = seedEntries();
+    for (const { it } of list) {
+      const k = it.e.key, ns = seedSection(it), f = seedSecOf(k);
+      if (f) { f.s.title = ns.title; f.s.blocks = ns.blocks; f.s.key = k; }
+      else {
+        let part = doc.parts.find(p => p.id === it.pid);
+        if (!part) { part = { id: it.pid, title: it.pid === "book" ? "Книга" : "Концепция", head: null, sections: [] }; doc.parts.push(part); }
+        // новая глава — после той главы от Claude, что стоит перед ней в папке «Текст» (или перед следующей, или в конец)
+        const keys = order.filter(x => x.pid === it.pid).map(x => x.e.key), j = keys.indexOf(k);
+        const at = key => part.sections.findIndex(x => (x.key || x.id) === key);
+        let pos = -1;
+        for (let q = j - 1; q >= 0 && pos < 0; q--) { const x = at(keys[q]); if (x >= 0) pos = x + 1; }
+        for (let q = j + 1; q < keys.length && pos < 0; q++) { const x = at(keys[q]); if (x >= 0) pos = x; }
+        part.sections.splice(pos < 0 ? part.sections.length : pos, 0, ns);
+      }
+      doc.seedSeen[k] = { h: it.h, t: hashStr(canonText(ns)) };
+    }
+    doc.seedVersion = SEED_VERSION;
+    touch(); undoStack = []; renderAll();
+    toast(list.length === 1 ? "Загружено: «" + short(list[0].title, 40) + "»" : "Загружено разделов: " + list.length);
   }
 
   // ---------- Помощники ----------
@@ -546,6 +691,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         head: p.head && typeof p.head === "object" ? { title: String(p.head.title || ""), sub: String(p.head.sub || "") } : null,
         sections: (Array.isArray(p.sections) ? p.sections : []).map(s => ({
           id: String(s.id || newId("s")).replace(/[^\w-]/g, ""),
+          ...(s.key ? { key: String(s.key).replace(/[^\w-]/g, "") } : {}),
           title: String(s.title || ""),
           blocks: (Array.isArray(s.blocks) ? s.blocks : []).map(b => {
             const t = ["p", "note", "img"].includes(b.t) ? b.t : "p";
@@ -557,7 +703,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
             return o;
           })
         }))
-      }))
+      })),
+      // Какие версии глав от Claude уже загружены; нет — значит, данные старше задачи 11 (см. prepSeed)
+      seedSeen: d.seedSeen && typeof d.seedSeen === "object" && !Array.isArray(d.seedSeen)
+        ? Object.fromEntries(Object.entries(d.seedSeen).filter(([k, v]) => /^[\w-]+$/.test(k) && v && typeof v === "object")
+          .map(([k, v]) => [k, { h: String(v.h || ""), t: String(v.t || "") }]))
+        : undefined
     };
   }
 
@@ -662,6 +813,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   // ---------- Отрисовка ----------
   function renderAll() {
+    prepSeed();
     reanchorBm();
     applyGroupStyles(); renderTabs(); renderToolbar(); renderView(); renderStatus(); checkBanners();
     if (posReady) restorePosSoon();
@@ -681,9 +833,15 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function isEmptyDoc() { return !doc.parts.some(p => p.sections.some(s => s.blocks.length)); }
   function checkBanners() {
     $("#site-banner").hidden = !(SITE && isEmptyDoc());
-    const show = !SITE && !seedDismissed && (doc.seedVersion || 1) < SEED_VERSION;
+    // Новые и изменённые главы от Claude: загружаются только они, остальные главы с твоими пометками не трогаются
+    const list = seedPending, show = !SITE && !seedDismissed && list.length > 0;
     $("#seed-banner").hidden = !show;
-    if (show) $("#seed-text").textContent = `Claude обновил текст в этой странице (версия ${SEED_VERSION}, у тебя ${doc.seedVersion || 1}). Загрузить новую версию? Твои текущие данные сохранятся в резервной копии.`;
+    if (!show) return;
+    const one = list.length === 1;
+    const names = list.map(x => "«" + short(x.title, 50) + "»" + (x.isNew ? " (новая)" : "") + (x.own ? " *" : "")).join(", ");
+    $("#seed-text").textContent = `Claude обновил ${one ? "главу" : "главы"}: ${names}. Загрузить? ${one ? "Заменится только она" : "Заменятся только они"}, остальные главы и твои пометки в них останутся как есть.` +
+      (list.some(x => x.own) ? " * — здесь у тебя есть свои пометки или правки, их заменит версия Claude." : "") +
+      " Нынешние данные сохранятся в резервной копии.";
   }
 
   function countMarks() {
@@ -1340,6 +1498,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Добавить в конец: заметку", fn: () => insertBlock({ sid }, { id: newId("b"), t: "note", text: "", cm: [] }) },
       { label: "Добавить в конец: картинку", fn: () => pickImage({ sid }) },
       { sep: true },
+      { label: "Текст для Claude: этот раздел…", fn: () => openSectionText(sid) },
+      { sep: true },
       { label: "Новый раздел после этого", fn: () => addSection(f.p, sid) },
       { label: "Переместить раздел вверх", fn: () => moveSection(sid, -1) },
       { label: "Переместить раздел вниз", fn: () => moveSection(sid, 1) },
@@ -1421,7 +1581,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         ? "Файл ляжет в папку «Экспорт» проекта, и откроется Проводник с ним: перетащи его в «Избранное» в Телеграме. На телефоне открой «Книгу Тишины» и нажми «Импорт»."
         : "Если появится меню «Поделиться», выбери Телеграм → «Избранное». Если файл скачался, отправь его в «Избранное» в Телеграме. На другом устройстве нажми «Импорт».", "muted"),
       el("hr"),
-      para("<b>Текст для Claude</b>: все разделы с пометками в виде обычного текста, чтобы попросить внести правки."),
+      para("<b>Текст для Claude</b>: все разделы с пометками в виде обычного текста, чтобы попросить внести правки. Одну главу — через «⋯» у её названия → «Текст для Claude»."),
       r2
     ), [{ label: "Закрыть" }]);
   }
@@ -1492,53 +1652,31 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     setTimeout(() => { ta.focus(); ta.select(); }, 50);
   }
 
+  // «Текст для Claude»: все разделы в формате файлов папки «Текст» — Claude берёт из него только нужные главы
   function buildMarkdown() {
-    const L = []; let fnN = 0;
-    L.push(`# ${doc.title}: текст с пометками`, "");
-    L.push(`Выгружено ${fmt(nowISO())} с устройства «${prefs.device}».`);
-    L.push(`Обозначения: ${doc.groups.map(g => "[" + g.name + ": …]").join(", ")}; ~~зачёркнуто~~; [^N] — комментарий автора (тексты комментариев после каждого раздела).`);
+    const L = [`<!-- ${doc.title}: текст с пометками для Claude. Выгружено ${fmt(nowISO())} с устройства «${prefs.device}». ` +
+      `Формат — как у файлов в папке «Текст» (Текст/README.md): [Группа: …] — пометка, ~~…~~ — зачёркнуто, ` +
+      `{…}[^N] — комментарий к словам, [^N] отдельной строкой — к абзацу, «> » — заметка, тексты комментариев — в конце раздела. -->`];
     for (const p of doc.parts) {
-      L.push("", `## ${p.title}`);
-      for (const s of p.sections) {
-        L.push("", `### ${s.title || "Без названия"}`);
-        const notes = [];
-        for (const b of s.blocks) {
-          const byId = new Map(b.cm.map(c => [c.id, c])); const used = new Set();
-          if (b.t === "p") {
-            const t = document.createElement("template"); t.innerHTML = b.html || "";
-            const out = [];
-            const rec = node => {
-              for (const c of node.childNodes) {
-                if (c.nodeType === 3) { out.push(c.textContent); continue; }
-                if (c.nodeType !== 1) continue;
-                const tag = c.tagName;
-                if (tag === "BR") { out.push("  \n"); continue; }
-                if (tag === "B") { out.push("**"); rec(c); out.push("**"); continue; }
-                if (tag === "I") { out.push("*"); rec(c); out.push("*"); continue; }
-                if (tag === "S") { out.push("~~"); rec(c); out.push("~~"); continue; }
-                if (c.classList.contains("mk")) { out.push("[" + groupName(c.dataset.g) + ": "); rec(c); out.push("]"); continue; }
-                if (c.classList.contains("cm")) {
-                  rec(c);
-                  const cm = byId.get(c.dataset.c);
-                  if (cm && !used.has(cm.id)) { used.add(cm.id); const n = ++fnN; out.push(`[^${n}]`); notes.push(`[^${n}]: ${oneLine(cm.text) || "(пусто)"}`); }
-                  continue;
-                }
-                rec(c);
-              }
-            };
-            rec(t.content);
-            L.push("", out.join("").trim() || "(пустой абзац)");
-          } else if (b.t === "note") L.push("", "> Заметка автора: " + (oneLine(b.text) || "(пусто)"));
-          else if (b.t === "img") L.push("", `[Картинка: ${b.cap || "без подписи"}]`);
-          for (const c of b.cm) {
-            if (used.has(c.id)) continue;
-            L.push(`> Комментарий к блоку${c.block ? "" : " (текст, к которому он относился, удалён)"}: ${oneLine(c.text) || "(пусто)"}`);
-          }
-        }
-        if (notes.length) L.push("", ...notes);
-      }
+      if (!p.sections.length) continue;
+      L.push("", `<!-- Часть: ${partFolder(p)} -->`);
+      for (const s of p.sections) L.push("", sectionText(s).replace(/\n$/, ""));
     }
     return L.join("\n") + "\n";
+  }
+  // Одна глава для Claude (⋯ у названия раздела) — пришли её в чат, и Claude поправит только её
+  function openSectionText(sid) {
+    const f = findSection(sid); if (!f) return;
+    const md = `<!-- Часть: ${partFolder(f.p)} -->\n` + sectionText(f.s);
+    const ta = el("textarea", "big"); ta.value = md; ta.readOnly = true;
+    openModal("Текст для Claude: " + short(f.s.title || "раздел", 40), frag(
+      para("Этот раздел с пометками и комментариями. Скопируй его и пришли Claude в чат (или сохрани файлом) — он поправит только эту главу. Так же выглядит файл главы в папке «Текст».", "muted"),
+      ta
+    ), [
+      { label: "Скопировать", primary: true, fn: () => { copyText(md); return false; } },
+      { label: "Сохранить .md", fn: () => { saveFile(`Книга_Тишины_${safeName(short(f.s.title || "раздел", 40))}_для_Claude.md`, md); return false; } },
+      { label: "Закрыть" }
+    ]);
   }
 
   function stats(d) {
@@ -1604,12 +1742,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Отмена" }
     ]);
   }
-  $("#seed-load").addEventListener("click", async () => {
-    await backupCurrent();
-    // закладки переходят в новую версию: renderAll → reanchorBm находит их абзацы по началу текста
-    const bm = doc.bm;
-    doc = buildSeed(); doc.bm = bm; touch(); undoStack = []; renderAll(); toast("Новая версия текста загружена");
-  });
+  // Загружаются только изменённые и новые главы (prepSeed); закладки находят свои абзацы заново (reanchorBm)
+  $("#seed-load").addEventListener("click", () => { applySeed(); });
   $("#seed-later").addEventListener("click", () => { seedDismissed = true; checkBanners(); });
 
   function openDevice() {
