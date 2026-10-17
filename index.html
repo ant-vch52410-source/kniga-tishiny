@@ -70,16 +70,28 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
 .themebtn { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 8px; min-height: 0; border-radius: 6px; line-height: 0; }
 .themebtn:hover:not(:disabled) { background: var(--surface); color: var(--fg); }
 .themebtn svg { width: 18px; height: 18px; }
-#status { font-size: 13px; }
-#sync-note { font-size: 12.5px; color: var(--danger); }
 #b-export.dot::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); margin-left: 6px; vertical-align: 1px; border: 1px solid var(--accent-fg); }
-.intro { font-size: 13.5px; color: var(--muted); padding-bottom: 10px; }
+/* Окно ⓘ (задача 13): как пользоваться, цвета групп, данные устройства, перенос — вместо подсказок по всей странице */
+.info h4 { font-size: 14.5px; margin: 4px 0 6px; }
+.info ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; font-size: 14.5px; }
+.info-sec { display: flex; flex-direction: column; gap: 6px; }
+.legend { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; font-size: 14.5px; }
+.legend .gname { font-weight: 700; padding: 1px 6px; border-radius: 4px; justify-self: start; }
+.legend .gmean { min-width: 0; }
+.info .warn { color: var(--danger); }
+.gicon { width: 1.1em; height: 1.1em; vertical-align: -.18em; flex: none; display: inline-block; }
 .banner { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; background: var(--warn-bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 10px; }
 .banner span { flex: 1 1 280px; min-width: 0; }
 
 /* Липкая панель */
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); }
-.tabsrow { display: flex; align-items: center; gap: 8px; padding-block: 6px 2px; }
+.tabsrow { display: flex; align-items: center; gap: 8px; padding-block: 6px 2px; flex-wrap: wrap; }
+/* «Экспорт», «Импорт», ⓘ, ☀/☾ — в строке вкладок отдельным блоком (не уезжают при прокрутке); на узком экране — своей строкой */
+.hb-row { display: contents; }
+.tabsrow .head-btns { flex: none; display: flex; gap: 4px; align-items: center; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tabsrow .head-btns button { min-height: 32px; padding: 3px 10px; }
+.tabsrow .head-btns .themebtn { padding: 3px 6px; }
+@media (max-width: 900px) { .hb-row { display: flex; flex-basis: 100%; justify-content: flex-end; } }
 .tabs { display: flex; gap: 2px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { border: 1px solid transparent; background: none; padding: 6px 10px; font-weight: 600; color: var(--muted); white-space: nowrap; flex: none; }
@@ -100,7 +112,9 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
   .tabsrow { gap: 4px; } .tabs { gap: 0; }
   #bm-btn, #more { min-width: 36px; padding: 4px 6px; justify-content: center; } #bm-btn .lbl { display: none; }
 }
-@media (max-width: 420px) { .tab { padding-inline: 4px; } .tab .cnt { margin-left: 2px; } .tabsrow { gap: 3px; } #bm-btn, #more { min-width: 34px; padding-inline: 5px; } }
+.tab-map { display: inline-flex; align-items: center; gap: 5px; }
+.tab-map svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 420px) { .tab { padding-inline: 3px; font-size: 12.5px; } .tab-map .lbl { display: none; } .tab .cnt { margin-left: 2px; } .tabsrow { gap: 3px; } #bm-btn, #more { min-width: 34px; padding-inline: 5px; } }
 
 /* Текст */
 #view { padding-block: 8px 120px; }
@@ -157,8 +171,12 @@ figure input { font-size: 14px; font-style: italic; }
 .callout .ch { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
 .callout .num { font: 600 11px/1 var(--font-mono); color: var(--accent-fg); background: var(--accent); border-radius: 8px; padding: 2px 5px; flex: none; cursor: pointer; }
 .callout .q { color: var(--muted); font-size: 12.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.callout .x { border: 0; background: none; padding: 0 2px; min-height: 0; font-size: 12px; color: var(--muted); flex: none; }
-.callout .x[data-armed] { color: var(--danger); font-weight: 600; }
+.callout .x { border: 0; background: none; padding: 0 4px; min-height: 0; min-width: 26px; font-size: 17px; line-height: 1; color: var(--muted); flex: none; align-self: center; }
+.callout .x[data-armed] { color: var(--danger); font-weight: 600; font-size: 12.5px; border: 1px solid var(--danger); padding: 3px 6px; }
+.callout .q.lk { color: var(--fg); font-size: 13px; }
+.callout .q .gname, .lk-head .gname { padding: 0 4px; border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.lk-head { display: inline; font-family: var(--font-text); font-weight: 400; font-size: 17px; line-height: 1.5; }
+.lk-head .gicon { margin-right: 6px; }
 .callout textarea { font-size: 14.5px; line-height: 1.45; }
 .callout .meta { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
 .empty { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-block: 6px; }
@@ -180,6 +198,164 @@ figure input { font-size: 14px; font-style: italic; }
 .sum-q { color: var(--muted); font-size: 13px; font-style: italic; }
 .sum-path { grid-column: 2; font-size: 12px; color: var(--muted); }
 @media (max-width: 560px) { .sum-item { grid-template-columns: minmax(0, 1fr); } .sum-path { grid-column: 1; } }
+/* значок группы вместо названия (задача 14): значок и сразу подсвеченные слова, ниже — комментарий */
+.sum-item.ic { grid-template-columns: 22px minmax(0, 1fr); column-gap: 8px; }
+.sum-item.ic .sum-path { grid-column: 2; }
+.sum-ic { font-size: 17px; line-height: 1.45; }
+.sum-note { display: block; font-family: var(--font-ui); font-size: 14.5px; line-height: 1.45; margin-top: 3px; white-space: pre-wrap; }
+
+/* Карта (задача 16): канва слева (~70%), панель справа (~30%); на телефоне панель — снизу */
+:root { --mp-ch: #e8eef8; --mp-ch-line: #9fb3d6; --mp-trunk: #b9c0cc; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --mp-ch: #222e44; --mp-ch-line: #4c6290; --mp-trunk: #4a515e; } }
+:root[data-theme="dark"] { --mp-ch: #222e44; --mp-ch-line: #4c6290; --mp-trunk: #4a515e; }
+#view.mapmode { max-width: none; padding: 0; }
+.mp { display: flex; flex-direction: column; min-height: 320px; }
+.mp-bar { display: flex; align-items: center; gap: 6px; padding: 6px max(12px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); flex: none; flex-wrap: wrap; }
+.mp-z { min-width: 36px; padding: 2px 0; font-size: 18px; line-height: 1; }
+.mp-k { font: 12.5px/1 var(--font-mono); min-width: 4.5ch; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mp-body { flex: 1; min-height: 0; display: flex; position: relative; overflow: hidden; }
+.mp-can { flex: 1; min-width: 0; position: relative; overflow: hidden; touch-action: none; cursor: grab; background: var(--surface); outline: none; user-select: none; -webkit-user-select: none; }
+.mp-can.grabbing { cursor: grabbing; }
+.mp-can:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.mp-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.mp-edges { position: absolute; overflow: visible; pointer-events: none; }
+.mp-e { fill: none; stroke: var(--muted); stroke-width: 1.6; }
+.mp-e.trunk { stroke: var(--mp-trunk); stroke-width: 9; stroke-linecap: round; }
+.mp-e.thin { stroke: var(--line); stroke-width: 1.4; }
+.mp-e.dash { stroke-dasharray: 7 5; stroke: var(--accent); }
+.mp-e.frame { stroke: var(--line); stroke-dasharray: 6 5; }
+.mp-n { position: absolute; box-sizing: border-box; border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 8px; padding: 6px 9px; display: flex; flex-direction: column; justify-content: space-between; gap: 3px; overflow: hidden; cursor: pointer; font-size: 12.5px; line-height: 1.3; }
+.mp-n .mp-t { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.mp-n .mp-t.auto { color: var(--muted); font-style: italic; }
+.mp-m { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); white-space: nowrap; min-width: 0; }
+.mp-dots { display: inline-flex; align-items: center; gap: 3px; min-width: 0; overflow: hidden; }
+.mp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); }
+.mp-dn { margin-right: 3px; font-family: var(--font-mono); }
+.mp-cc { margin-left: auto; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: var(--accent-fg); font: 600 10.5px/18px var(--font-mono); text-align: center; padding: 0 4px; box-sizing: border-box; flex: none; }
+.mp-len { margin-left: auto; font-family: var(--font-mono); font-size: 10.5px; flex: none; }
+.mp-cc + .mp-len { margin-left: 4px; }
+.mp-ep { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); align-items: center; justify-content: center; text-align: center; font-size: 14px; gap: 1px; }
+.mp-ep .mp-m { color: inherit; opacity: .85; }
+.mp-ch { background: var(--mp-ch); border-color: var(--mp-ch-line); font-weight: 600; }
+.mp-ch .mp-m { font-weight: 400; }
+.mp-bl.mp-con { border-style: dashed; background: var(--bg); }
+.mp-br { border: 2px dashed var(--accent); background: var(--bg); color: var(--accent); font-weight: 600; justify-content: center; }
+.mp-plus { border: 2px dashed var(--muted); background: var(--surface); color: var(--muted); align-items: center; justify-content: center; font-weight: 600; }
+.mp-lab { border: 0; background: none; font-weight: 700; color: var(--muted); padding: 0; cursor: default; font-size: 15px; justify-content: center; }
+.mp-cst { border: 0; background: none; font-weight: 700; padding: 4px 2px; justify-content: center; }
+.mp-cs { border-style: dashed; border-width: 2px; font-weight: 600; }
+.mp-cs .mp-m { font-weight: 400; }
+.mp-n.sel { outline: 3px solid var(--fg); outline-offset: 2px; }
+.mp-n:hover { border-color: var(--fg); }
+.mp-lab:hover, .mp-cst:hover { border-color: transparent; }
+/* далеко — без абзацев, узлы крупнее (FAR_S в коде) */
+.mp-world.far .mp-n { font-size: 19px; padding: 9px 13px; border-radius: 11px; gap: 4px; }
+.mp-world.far .mp-ep { font-size: 22px; }
+.mp-world.far .mp-m { font-size: 16px; gap: 6px; }
+.mp-world.far .mp-dot { width: 12px; height: 12px; }
+.mp-world.far .mp-cc { min-width: 26px; height: 26px; border-radius: 13px; font-size: 15px; line-height: 26px; }
+.mp-world.far .mp-len { font-size: 15px; }
+.mp-world.far .mp-lab { font-size: 22px; }
+.mp-world.far .mp-n.sel { outline-width: 4px; }
+.mp-mini { position: absolute; right: 10px; bottom: 10px; width: 168px; height: 118px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; cursor: crosshair; touch-action: none; opacity: .95; }
+/* панель */
+.mp-panel { width: var(--pw, 30%); min-width: 260px; max-width: var(--pwmax, 470px); overflow: auto; background: var(--bg); flex: none; overscroll-behavior: contain; }
+.mp-rs { flex: none; width: 7px; cursor: col-resize; border-left: 1px solid var(--line); touch-action: none; }
+.mp-rs:hover, .mp-rs.on { background: var(--line); }
+.mp-ph { display: none; }
+.mp-pb { padding: 12px 14px 28px; display: flex; flex-direction: column; gap: 10px; }
+.mp-path { font-size: 12.5px; color: var(--muted); text-align: left; border: 0; background: none; padding: 0; min-height: 0; }
+button.mp-path { color: var(--accent); }
+.mp-h { font-family: var(--font-text); font-size: 19px; line-height: 1.3; }
+.mp-h4 { font-size: 14px; font-weight: 700; margin-top: 4px; }
+.mp-stat { font-size: 13px; color: var(--muted); }
+.mp-f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.mp-f > span { color: var(--muted); }
+.mp-tools { display: flex; flex-wrap: wrap; gap: 5px; user-select: none; -webkit-user-select: none; }
+.mp-tools button { min-height: 32px; padding: 4px 8px; font-size: 13px; }
+.mp-tools .js-sel:not(.ready) { border-style: dashed; }
+.mp-row { padding: 0; }
+.mp-row .bt { font-size: 16.5px; line-height: 1.6; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-height: 3.2em; }
+.mp-row .bt:focus { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.mp-note { font-family: var(--font-text); font-size: 16px; }
+.mp-img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; cursor: zoom-in; }
+.mp-cms { display: flex; flex-direction: column; gap: 8px; }
+.mp-cm-a { display: flex; gap: 6px; flex-wrap: wrap; }
+.mp-cm-a button { min-height: 30px; padding: 3px 10px; font-size: 13px; }
+.mp-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex: none; }
+.mp-li { text-align: left; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 7px 10px; min-height: 36px; background: none; display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; }
+.mp-li:first-child { border-top: 0; }
+.mp-li:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+.mp-li-t { min-width: 0; overflow-wrap: anywhere; }
+.mp-li-s { margin-left: auto; color: var(--muted); font: 12px var(--font-mono); white-space: nowrap; }
+.mp-act { display: flex; flex-wrap: wrap; gap: 6px; }
+.mp-act button[data-armed] { color: var(--danger); border-color: var(--danger); font-weight: 600; }
+@media (max-width: 760px) {
+  .mp-rs { display: none; }
+  .mp-panel { position: absolute; left: 0; right: 0; bottom: 0; width: auto; min-width: 0; max-width: none; height: 50%; border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 24px var(--shadow); transform: translateY(105%); transition: transform .2s; z-index: 5; }
+  .mp-body.has-sel .mp-panel { transform: none; }
+  .mp-body.full .mp-panel { height: 88%; }
+  .mp-body.has-sel .mp-mini { display: none; }
+  .mp-ph { display: flex; align-items: center; justify-content: center; position: sticky; top: 0; background: var(--bg); z-index: 1; padding: 2px 8px 0; min-height: 30px; }
+  .mp-grip { width: 90px; height: 26px; border: 0; background: none; min-height: 0; padding: 0; position: relative; }
+  .mp-grip::before { content: ""; position: absolute; left: 25px; right: 25px; top: 11px; height: 4px; border-radius: 2px; background: var(--line); }
+  .mp-x { position: absolute; right: 6px; top: 0; border: 0; background: none; font-size: 22px; min-height: 0; padding: 2px 10px; color: var(--muted); }
+  .mp-pb { padding-top: 4px; }
+  .mp-mini { width: 120px; height: 86px; }
+}
+@media (prefers-reduced-motion: reduce) { .mp-panel { transition: none; } }
+/* 16б: полосы эпох, полка «Без эпохи», перетаскивание, «под вопросом», серые подписи */
+:root { --mp-band: rgba(30, 40, 60, .05); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --mp-band: rgba(255, 255, 255, .045); } }
+:root[data-theme="dark"] { --mp-band: rgba(255, 255, 255, .045); }
+.mp-e.band { fill: var(--mp-band); stroke: none; }
+.mp-e.band.alt { fill: none; }
+.mp-e.bline { stroke: var(--muted); stroke-width: 1.2; opacity: .55; }
+.mp-e.shelf { stroke: var(--muted); stroke-width: 2; opacity: .7; }
+.mp-edges.dim { opacity: .3; }
+.mp-n.mp-bandlab { border: 0; background: none; padding: 0; color: var(--muted); font-size: 19px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; justify-content: center; overflow: visible; white-space: nowrap; opacity: .85; }
+.mp-n.mp-bandlab .mp-t { -webkit-line-clamp: 1; }
+.mp-n.mp-txt { border: 1px dashed transparent; background: none; color: var(--muted); font-size: 17px; line-height: 24px; padding: 4px 6px; white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; display: block; border-radius: 4px; width: max-content !important; max-width: 520px; height: auto !important; }
+.mp-n.mp-txt:hover { border-color: var(--line); }
+.mp-n.mp-txt.empty { font-style: italic; opacity: .6; }
+.mp-n.mp-qc { border: 0; background: var(--surface); color: var(--fg); font-style: italic; font-size: 11.5px; line-height: 18px; padding: 0 7px; border-radius: 9px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 0 0 1px var(--line); }
+.mp-n.mp-qc .mp-t { display: inline; }
+.mp-bl.q { border: 2px dashed var(--fg); }
+.mp-bl.mv { box-shadow: inset 4px 0 0 var(--accent); }
+.mp-n.lift { opacity: .88; box-shadow: 0 10px 28px var(--shadow); z-index: 4; cursor: grabbing; }
+.mp-n.drop { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mp-n.mp-shelfz { border: 0; background: none; pointer-events: none; border-radius: 0; padding: 0; }
+.mp-n.mp-shelfz.drop { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.mp-n.mp-cn { border: 2px dashed var(--muted); background: var(--bg); color: var(--muted); justify-content: center; font-weight: 600; }
+.mp-can { -webkit-touch-callout: none; }
+.mp-can.dragging { cursor: grabbing; }
+.mp-add { display: inline-flex; gap: 6px; }
+.mp-dr { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+.mp-dr[hidden] { display: none; }
+.mp-chg { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.mp-dr button[data-armed] { color: var(--danger); border-color: var(--danger); font-weight: 600; }
+.mp-q { display: flex; flex-direction: column; gap: 6px; }
+.mp-ep-row { align-items: center; }
+/* правки 16б: мелко — полоски вместо текста; рамка выделения; абзац, который тянут из панели; «←» */
+.mp-world.lod .mp-bl > *, .mp-world.lod .mp-qc { visibility: hidden; }
+.mp-world.lod .mp-bl::before, .mp-world.lod .mp-bl::after { content: ""; position: absolute; left: 12px; height: 9px; border-radius: 4px; background: var(--line); }
+.mp-world.lod .mp-bl::before { right: 35%; top: 15px; }
+.mp-world.lod .mp-bl::after { right: 15%; top: 33px; }
+.mp-rubber { position: absolute; z-index: 6; pointer-events: none; border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.mp-ghost { position: fixed; z-index: 200; pointer-events: none; max-width: 240px; padding: 7px 11px; background: var(--bg); border: 2px dashed var(--accent); border-radius: 8px; font-size: 13px; box-shadow: 0 8px 24px var(--shadow); }
+.mp-li.lift { opacity: .5; }
+.mp-panel.drop { box-shadow: inset 0 0 0 3px var(--accent); }
+.mp-back { align-self: flex-start; border: 0; background: none; min-height: 0; padding: 2px 0; color: var(--accent); font-weight: 600; font-size: 14px; text-align: left; }
+.mp-back:hover { background: none; text-decoration: underline; }
+.mp-cli { cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.mp-cli.on .mp-li-s { color: var(--accent); }
+.mp-only-phone { display: none; }
+@media (max-width: 760px) { .mp-only-phone { display: inline-flex; align-items: center; } }
+@media (max-width: 480px) { .mp-bar { gap: 4px; padding-block: 4px; } .mp-bar button { min-height: 34px; padding: 3px 8px; font-size: 13.5px; } .mp-bar .mp-z { min-width: 34px; } .mp-long { display: none; } .mp-add { gap: 4px; } }
+/* книга: абзац «под вопросом» */
+.row.q > .main { outline: 2px dashed var(--muted); outline-offset: 5px; border-radius: 3px; }
+.qcap { display: block; border: 0; background: none; padding: 0; min-height: 0; margin: 0 0 4px; font-size: 13px; font-style: italic; color: var(--muted); text-align: left; cursor: pointer; }
+.qcap:hover { color: var(--fg); background: none; }
 
 /* Всплывающее меню, окна, просмотр картинки, уведомления */
 .pop { position: fixed; z-index: 50; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 28px var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 1px; max-height: calc(100vh - 24px); overflow: auto; box-sizing: border-box; }
@@ -224,6 +400,31 @@ figure input { font-size: 14px; font-style: italic; }
 .bm-path { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
 .bm-path.lost { color: var(--danger); }
 .bm-row button[data-armed] { color: var(--danger); font-weight: 600; }
+/* Перенос в книгу (задача 12): «⋯» у абзаца → «Перенести в книгу…» — сколько абзацев, куда (главы с краткими описаниями), место */
+.mbox select { font: inherit; font-size: 14.5px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-height: 40px; width: 100%; max-width: 100%; box-sizing: border-box; }
+.mv-sec { display: flex; flex-direction: column; gap: 6px; flex: none; min-width: 0; }
+.mv-h { font-weight: 700; font-size: 14.5px; }
+.mv-count { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14.5px; }
+.mv-count button { min-height: 40px; }
+.mv-step { min-width: 40px; padding: 0; font-size: 18px; line-height: 1; }
+.mv-n { font: 600 16px/1 var(--font-mono); min-width: 3ch; text-align: center; font-variant-numeric: tabular-nums; }
+.mbox .mv-prev { font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+.mv-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: min(42vh, 420px); flex: none; }
+.mv-opt { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 9px 12px; min-height: 44px; background: none; flex: none; }
+.mv-opt:first-child { border-top: 0; }
+.mv-opt:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+.mv-opt[aria-checked="true"] { background: var(--surface); }
+.mv-dot { width: 16px; height: 16px; border: 2px solid var(--muted); border-radius: 50%; box-sizing: border-box; margin-top: 2px; }
+.mv-opt[aria-checked="true"] .mv-dot { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 0 3.5px, transparent 4px); }
+.mv-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mv-t { font-weight: 700; overflow-wrap: anywhere; }
+.mv-d { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.mv-new { display: flex; flex-direction: column; gap: 10px; }
+.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.mv-field > span { color: var(--muted); font-size: 13px; }
+.mv-field input[type="text"] { min-height: 40px; }
+.mv-sec[hidden], .mv-new[hidden], .mv-field[hidden] { display: none; }
+.mv-box .mact button { min-height: 40px; }
 .lb { position: fixed; inset: 0; z-index: 70; background: var(--lb-bg); color: var(--lb-fg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .lb-bar { display: flex; gap: 8px; align-items: center; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
 .lb-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
@@ -249,18 +450,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 <header class="wrap head">
   <div class="head-text">
     <h1>Книга Тишины</h1>
-    <p id="status" class="muted">Загружаю данные этого устройства…</p>
-    <p id="sync-note" hidden>Есть правки, которых ещё нет в Телеграме. Нажми «Экспорт».</p>
-  </div>
-  <div class="head-btns">
-    <button id="b-export" type="button" class="primary">Экспорт</button>
-    <button id="b-import" type="button">Импорт</button>
-    <button id="b-help" type="button">Как переносить</button>
-    <button class="themebtn" id="theme" type="button" title="Тема: светлая / тёмная" aria-label="Переключить тему"></button>
   </div>
 </header>
 <div class="wrap">
-  <p class="intro">Выдели текст и выбери на панели цвет группы, «Зачеркнуть», «Комментарий» или «Удалить». Кнопка «⋯» слева от абзаца открывает действия с ним. Каждая вкладка открывается там, где ты остановился, а кнопка «Закладки» ведёт к отмеченным местам и разделам. Всё сохраняется на этом устройстве, а на другое устройство переносится файлом через Телеграм.</p>
   <div id="seed-banner" class="banner" hidden>
     <span id="seed-text">Claude обновил текст в этой странице. Загрузить новую версию? Твои текущие данные сохранятся в резервной копии.</span>
     <button id="seed-load" type="button" class="primary">Загрузить новую версию</button>
@@ -280,6 +472,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
     <button id="bm-btn" type="button" aria-haspopup="menu" aria-label="Закладки" title="Закладки и разделы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><span class="lbl">Закладки</span></button>
     <button id="more" type="button" aria-haspopup="menu" aria-label="Ещё" title="Ещё">⋯</button>
+    <div class="hb-row"><div class="head-btns">
+      <button id="b-export" type="button" class="primary">Экспорт</button>
+      <button id="b-import" type="button">Импорт</button>
+      <button class="themebtn" id="info" type="button" title="Как пользоваться, цвета групп, данные" aria-label="Как пользоваться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/></svg></button>
+      <button class="themebtn" id="theme" type="button" title="Тема: светлая / тёмная" aria-label="Переключить тему"></button>
+    </div></div>
   </div>
   <div class="wrap"><div class="tb" id="tb" role="toolbar" aria-label="Пометки"></div></div>
 </div>
@@ -353,7 +551,14 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   // У каждой главы из папки «Текст» свой ключ (key). doc.seedSeen[key] = { h, t }: h — какую версию главы от Claude
   // уже загрузили, t — как глава выглядела сразу после загрузки (чтобы предупредить, что в ней есть свои пометки).
   function hashStr(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36); }
-  function seedItem(pid, e) { return { pid, e, h: hashStr(JSON.stringify([e.title, e.blocks])) }; }
+  // Версия главы — без кратких подписей абзацев (задача 16): новая подпись от Claude не делает главу изменённой.
+  // Абзац без комментариев с одной подписью — та же строка, что и без подписи (так его пишет tools\tekst.py).
+  function seedPlain(x) {
+    if (!x || typeof x !== "object" || !("sum" in x)) return x;
+    const o = { ...x }; delete o.sum;
+    return Object.keys(o).length === 1 && "html" in o ? o.html : o;
+  }
+  function seedItem(pid, e) { return { pid, e, h: hashStr(JSON.stringify([e.title, e.blocks.map(seedPlain)])) }; }
   function seedEntries() { return [...BOOK.map(e => seedItem("book", e)), ...CONCEPT.map(e => seedItem("concept", e))]; }
   // Глава от Claude → раздел страницы; id абзацев меняются с каждой новой версией главы, чтобы не совпасть с прежними
   function seedSection(it) {
@@ -366,6 +571,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         if (o.t === "p") o.html = b.html || "";
         if (o.t === "note") o.text = b.text || "";
         if (o.t === "img") { o.img = b.img || ""; o.cap = b.cap || ""; }
+        if (typeof b.q === "string") o.q = b.q;
         return o;
       })
     };
@@ -401,7 +607,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     opts = opts || {};
     const gname = opts.gname || groupName;
     const L = [];
-    if (opts.head !== false) L.push("---", "id: " + (s.key || s.id), "---");
+    // в шапке — своё краткое описание автора (задача 12); в сравнение глав (canonText) оно не входит
+    if (opts.head !== false) L.push("---", "id: " + (s.key || s.id), ...(descLine(s.desc) ? ["desc: " + descLine(s.desc)] : []), "---");
     L.push("# " + (s.title || "Без названия").replace(/\s+/g, " ").trim());
     const notes = []; let n = 0;
     for (const b of s.blocks || []) {
@@ -425,7 +632,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       const bare = [...cmap.keys()].filter(c => !nums.has(c)).map(cmNum);
       if (!lines.length && !bare.length) continue;
       if (!lines.length) lines = [b.t === "note" ? ">" : "\\"];
-      L.push("", ...lines);
+      L.push("");
+      // своя краткая подпись абзаца (задача 16) — в «Тексте для Claude»; в сравнение глав (canonText) не входит
+      if (opts.head !== false && descLine(b.sum)) L.push("<!-- кратко: " + descLine(b.sum).replace(/-{2,}/g, "—").slice(0, 200) + " -->");
+      // абзац «под вопросом» (задача 16) — часть главы: входит и в сравнение глав
+      if (typeof b.q === "string") { const q = descLine(b.q).replace(/-{2,}/g, "—").slice(0, 200); L.push(q ? "<!-- под вопросом: " + q + " -->" : "<!-- под вопросом -->"); }
+      L.push(...lines);
       if (bare.length) L.push(bare.map(x => `[^${x}]`).join(" "));
     }
     if (notes.length) {
@@ -524,6 +736,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   let sumFilter = "all";
   let seedDismissed = false;
   const SUM = "__sum";
+  const MAP = "__map";   // вкладка «Карта» (задача 16)
+  let MV = null;          // вид карты: сдвиг x, y и масштаб k
   // Место чтения запоминаем только после загрузки данных устройства, иначе стартовый текст затёр бы сохранённое место
   let posReady = false;
   let posTimer = null;
@@ -614,7 +828,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       try { const raw = localStorage.getItem("kt-doc"); if (raw) { const d = JSON.parse(raw); if (d && d.app === APP) doc = normalizeDoc(d); } } catch (e2) { }
       try { const raw = localStorage.getItem("kt-prefs"); if (raw) prefs = { ...prefs, ...JSON.parse(raw) }; } catch (e3) { }
     }
-    if (prefs.tab !== SUM && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
+    if (prefs.tab !== SUM && prefs.tab !== MAP && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
     posLast = JSON.stringify(prefs.pos || {});
     posReady = true;
     renderAll();
@@ -693,6 +907,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
           id: String(s.id || newId("s")).replace(/[^\w-]/g, ""),
           ...(s.key ? { key: String(s.key).replace(/[^\w-]/g, "") } : {}),
           title: String(s.title || ""),
+          // краткое описание (задача 12): desc — своё, desc0 — описание Claude из «Экспорта» (для телефона, где нет BOOK)
+          ...(descLine(s.desc) ? { desc: descLine(s.desc) } : {}),
+          ...(descLine(s.desc0) ? { desc0: descLine(s.desc0) } : {}),
           blocks: (Array.isArray(s.blocks) ? s.blocks : []).map(b => {
             const t = ["p", "note", "img"].includes(b.t) ? b.t : "p";
             const o = { id: String(b.id || newId("b")).replace(/[^\w-]/g, ""), t, cm: [] };
@@ -700,16 +917,52 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
             if (t === "note") o.text = String(b.text || "");
             if (t === "img") { o.img = String(b.img || "").replace(/[^\w-]/g, ""); o.cap = String(b.cap || ""); }
             o.cm = (Array.isArray(b.cm) ? b.cm : []).filter(c => c && c.id).map(c => ({ id: String(c.id).replace(/[^\w-]/g, ""), text: String(c.text || ""), at: c.at || null, block: !!c.block }));
+            // краткая подпись абзаца для «Карты» (задача 16): sum — своя, sum0 — от Claude из «Экспорта» (для телефона)
+            if (descLine(b.sum)) o.sum = descLine(b.sum).slice(0, 200);
+            if (descLine(b.sum0)) o.sum0 = descLine(b.sum0).slice(0, 200);
+            // абзац «под вопросом» (задача 16): место в книге ещё не решено; q — подпись (может быть пустой)
+            if (typeof b.q === "string") o.q = descLine(b.q).slice(0, 200);
             return o;
           })
         }))
       })),
+      // Карта (задача 16): эпохи, ветви, подписи, места на поле, черновик перестановок (см. «Карта» ниже)
+      map: normMap(d.map),
       // Какие версии глав от Claude уже загружены; нет — значит, данные старше задачи 11 (см. prepSeed)
       seedSeen: d.seedSeen && typeof d.seedSeen === "object" && !Array.isArray(d.seedSeen)
         ? Object.fromEntries(Object.entries(d.seedSeen).filter(([k, v]) => /^[\w-]+$/.test(k) && v && typeof v === "object")
           .map(([k, v]) => [k, { h: String(v.h || ""), t: String(v.t || "") }]))
         : undefined
     };
+  }
+
+  // Карта в данных: epochs [{ id, title, y }] (до 16б — first: с какой главы эпоха), branches [{ id, title, epoch }],
+  // texts [{ id, text }], pos { "c:главa" | "b:абзац" | "r:ветвь" | "t:подпись" → [x, y] }, draft — перестановки до
+  // «Сохранить в книгу» { ch, bl, out, q }, base — места и «под вопросом» до первой перестановки (для «Сбросить»)
+  function normMap(m) {
+    if (!m || typeof m !== "object" || !Array.isArray(m.epochs)) return undefined;
+    const id = v => String(v || "").replace(/[^\w-]/g, ""), ids = a => (Array.isArray(a) ? a : []).map(id).filter(Boolean);
+    const num = v => v === null || v === "" || !Number.isFinite(+v) ? null : Math.round(+v);
+    const posOf = p => { const r = {}; if (p && typeof p === "object") for (const [k, v] of Object.entries(p)) if (/^[cbrt]:[\w-]+$/.test(k) && Array.isArray(v) && num(v[0]) != null && num(v[1]) != null) r[k] = [num(v[0]), num(v[1])]; return r; };
+    const strs = q => Object.fromEntries(Object.entries(q && typeof q === "object" ? q : {}).filter(([k, v]) => /^[\w-]+$/.test(k) && typeof v === "string").map(([k, v]) => [k, descLine(v).slice(0, 200)]));
+    const o = {
+      epochs: m.epochs.filter(e => e && e.id).map(e => { const x = { id: id(e.id), title: String(e.title || "Эпоха").slice(0, 80) }; if (num(e.y) != null) x.y = num(e.y); else if (e.first) x.first = id(e.first); return x; }),
+      branches: (Array.isArray(m.branches) ? m.branches : []).filter(b => b && b.id).map(b => ({ id: id(b.id), title: String(b.title || "Ветвь").slice(0, 80), epoch: id(b.epoch) })),
+      texts: (Array.isArray(m.texts) ? m.texts : []).filter(t => t && t.id).map(t => ({ id: id(t.id), text: String(t.text || "").slice(0, 2000) }))
+    };
+    if (m.pos && typeof m.pos === "object") o.pos = posOf(m.pos);
+    const d = m.draft;
+    if (d && typeof d === "object") {
+      const nd = {};
+      if (Array.isArray(d.ch)) nd.ch = ids(d.ch);
+      if (d.bl && typeof d.bl === "object") { nd.bl = {}; for (const [k, v] of Object.entries(d.bl)) if (/^[\w-]+$/.test(k)) nd.bl[k] = ids(v); }
+      if (Array.isArray(d.out)) nd.out = ids(d.out);
+      if (d.q && typeof d.q === "object") nd.q = strs(d.q);
+      o.draft = nd;
+      const b = m.base;
+      if (b && typeof b === "object") o.base = { pos: posOf(b.pos), q: strs(b.q), ep: Object.fromEntries(Object.entries(b.ep && typeof b.ep === "object" ? b.ep : {}).filter(([k, v]) => /^[\w-]+$/.test(k) && num(v) != null).map(([k, v]) => [k, num(v)])) };
+    }
+    return o;
   }
 
   // ---------- Поиск ----------
@@ -731,7 +984,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function snap() {
     return {
       groups: doc.groups.map(g => ({ ...g })),
-      parts: doc.parts.map(p => ({ ...p, sections: p.sections.map(s => ({ ...s, blocks: s.blocks.map(b => ({ ...b, cm: (b.cm || []).map(c => ({ ...c })) })) })) }))
+      parts: doc.parts.map(p => ({ ...p, sections: p.sections.map(s => ({ ...s, blocks: s.blocks.map(b => ({ ...b, cm: (b.cm || []).map(c => ({ ...c })) })) })) })),
+      map: doc.map ? JSON.parse(JSON.stringify(doc.map)) : undefined
     };
   }
   function pushUndo() { undoStack.push(snap()); if (undoStack.length > 60) undoStack.shift(); lastSnap = Date.now(); renderToolbarState(); }
@@ -739,7 +993,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function undo() {
     const s = undoStack.pop();
     if (!s) { toast("Нечего отменять"); return; }
-    doc.groups = s.groups; doc.parts = s.parts;
+    doc.groups = s.groups; doc.parts = s.parts; doc.map = s.map;
+    reanchorBm();   // закладки на абзацах, вернувшихся на место (например, после «Перенести в книгу…»), — снова с их разделом
     applyGroupStyles(); touch(); renderToolbar(); renderView(true); toast("Отменено");
   }
 
@@ -782,6 +1037,20 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const c = i => Math.round(parseInt(hex.slice(i, i + 2), 16) * k + 255 * (1 - k)).toString(16).padStart(2, "0");
     return "#" + c(1) + c(3) + c(5);
   }
+  // Значки групп (задача 14, выбрал Антон): «Идея» — лампочка, «Вопрос» — «?» в кружке, «Важно» — замок.
+  // Ставятся вместо названия группы в выносках и «Сводке»; по id, поэтому переименование группы их не убирает.
+  const GROUP_ICON = {
+    idea: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.1V16h5v-.1c0-.8.4-1.5 1.1-2.1A6 6 0 0 0 12 3z"/>',
+    ask: '<circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 1 1 3.9 2.6c-.7.3-1.2 1-1.2 1.8v.6"/><circle cx="12" cy="17.3" r="1.25" fill="currentColor" stroke="none"/>',
+    keep: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="16" r="1.4" fill="currentColor" stroke="none"/>'
+  };
+  function gIcon(gid) {
+    const p = GROUP_ICON[gid]; if (!p) return null;
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    for (const [k, v] of Object.entries({ viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" })) s.setAttribute(k, v);
+    s.setAttribute("class", "gicon"); s.setAttribute("data-g", gid); s.innerHTML = p;
+    return s;
+  }
   function okColor(c, d) { return /^#[0-9a-f]{6}$/i.test(c || "") ? c : d; }
   // Группа: color — цвет текста, bg — подсветка (фон), textOn / hlOn — включены ли они.
   // В старых данных подсветки нет — включаем её бледным оттенком цвета группы.
@@ -802,6 +1071,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const cls = [".mk", '.chip:not([aria-pressed="true"])', ".gname"];
     for (const g of doc.groups) {
       const a = `[data-g="${g.id}"]`;
+      // значок группы (задача 14) — всегда цветом группы, даже если у неё выключен цвет текста
+      css += themed([".gicon"], a, `color:${g.color}`, `color:${darkVariant(g.color)}`);
+      css += themed([".mp-dot"], a, `background-color:${g.color}`, `background-color:${darkVariant(g.color)}`);   // точки групп на «Карте»
       if (g.textOn) css += themed(cls, a, `color:${g.color}`, `color:${g.hlOn ? lightOnHl(g.color) : darkVariant(g.color)}`);
       if (g.hlOn) {
         css += themed(cls, a, `background-color:${g.bg}`, `background-color:${darkBg(g.bg)}`);
@@ -819,14 +1091,15 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     if (posReady) restorePosSoon();
   }
 
-  function renderStatus() {
-    const st = $("#status");
+  // Состояние данных — в окне ⓘ (задача 13); в шапке только красная точка на «Экспорт»
+  function statusLine() {
     const bits = [storageOK ? (LOCAL ? `Сохраняется в папке проекта («${prefs.device}»)` : `Сохраняется на этом устройстве («${prefs.device}»)`) : "Сохранение сейчас не работает"];
     if (doc.updatedAt) bits.push("изменено " + fmt(doc.updatedAt) + (doc.updatedOn ? ` («${doc.updatedOn}»)` : ""));
-    st.textContent = bits.join(" · ");
-    const uns = !!doc.updatedAt && (!prefs.syncedAt || doc.updatedAt > prefs.syncedAt);
-    $("#b-export").classList.toggle("dot", uns);
-    $("#sync-note").hidden = !uns;
+    return bits.join(" · ");
+  }
+  function unsynced() { return !!doc.updatedAt && (!prefs.syncedAt || doc.updatedAt > prefs.syncedAt); }
+  function renderStatus() {
+    $("#b-export").classList.toggle("dot", unsynced());
     $("#store-banner").hidden = storageOK;
   }
 
@@ -840,7 +1113,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const one = list.length === 1;
     const names = list.map(x => "«" + short(x.title, 50) + "»" + (x.isNew ? " (новая)" : "") + (x.own ? " *" : "")).join(", ");
     $("#seed-text").textContent = `Claude обновил ${one ? "главу" : "главы"}: ${names}. Загрузить? ${one ? "Заменится только она" : "Заменятся только они"}, остальные главы и твои пометки в них останутся как есть.` +
-      (list.some(x => x.own) ? " * — здесь у тебя есть свои пометки или правки, их заменит версия Claude." : "") +
+      (list.some(x => x.own) ? " * — здесь у тебя есть свои пометки, правки или перенесённые абзацы, их заменит версия Claude." : "") +
       " Нынешние данные сохранятся в резервной копии.";
   }
 
@@ -848,7 +1121,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     let n = 0;
     for (const p of doc.parts) for (const s of p.sections) for (const b of s.blocks) {
       n += (b.cm || []).length;
-      if (b.html) n += (b.html.match(/data-g="/g) || []).length + (b.html.match(/<s>/g) || []).length;
+      if (!b.html) continue;
+      n += (b.html.match(/data-g="/g) || []).length + (b.html.match(/<s>/g) || []).length;
+      // «Идея»/«Вопрос» с комментарием — одна пометка, как в «Сводке» (задача 14)
+      if (b.html.includes('data-c="') && LINKED.some(g => b.html.includes(`data-g="${g}"`))) {
+        const t = document.createElement("template"); t.innerHTML = b.html; const seen = new Set();
+        t.content.querySelectorAll(".cm").forEach(a => { if (!seen.has(a.dataset.c) && linkedMk(a)) { seen.add(a.dataset.c); n--; } });
+      }
     }
     return n;
   }
@@ -864,6 +1143,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const c = el("span", "cnt", String(countMarks())); s.append(c);
     if (prefs.tab === SUM) s.setAttribute("aria-current", "page");
     t.append(s);
+    // «Карта» — значок и слово; на узком телефоне только значок, чтобы все вкладки помещались в строку
+    const m = btn("tab tab-map", null, () => switchTab(MAP));
+    m.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span class="lbl">Карта</span>';
+    m.setAttribute("aria-label", "Карта"); m.title = "Карта";
+    if (prefs.tab === MAP) m.setAttribute("aria-current", "page");
+    t.append(m);
   }
   // Каждая вкладка открывается там, где на ней остановился (место своё на каждом устройстве)
   function switchTab(id) {
@@ -882,7 +1167,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       return e;
     } }];
     for (const g of doc.groups) items.push({ key: "g:" + g.id, cat: "g", name: g.name, g: g.id, make: () => {
-      const c = btn("chip js-sel", g.name, () => applyGroup(g.id));
+      // «Идея» и «Вопрос» — сразу с комментарием (задача 14)
+      const c = btn("chip js-sel", g.name, () => LINKED.includes(g.id) ? markWithComment(g.id) : applyGroup(g.id));
       c.dataset.g = g.id; c.title = "Пометить выделенное: " + g.name;
       return c;
     } });
@@ -926,7 +1212,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function renderToolbar() {
     const tb = $("#tb"); tb.textContent = "";
-    const onSum = prefs.tab === SUM;
+    const onSum = prefs.tab === SUM || prefs.tab === MAP;   // в «Сводке» и на «Карте» панели пометок нет (на карте — своя на панели)
     tb.parentElement.hidden = onSum;
     if (onSum) return;
     const items = toolbarItems(), order = tbOrder(items);
@@ -942,14 +1228,16 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function renderToolbarState() {
     const tb = $("#tb"); if (!tb) return;
     const has = !!savedRange;
-    tb.querySelectorAll(".js-sel").forEach(b => b.classList.toggle("ready", has));
-    tb.querySelectorAll(".js-undo").forEach(b => { b.disabled = !undoStack.length; });
+    document.querySelectorAll("#tb .js-sel, .mp-tools .js-sel").forEach(b => b.classList.toggle("ready", has));
+    document.querySelectorAll("#tb .js-undo, .mp-tools .js-undo").forEach(b => { b.disabled = !undoStack.length; });
   }
 
   function renderView(keepScroll) {
     const y = window.scrollY;
     const v = $("#view"); v.textContent = "";
     v.classList.toggle("editing", edit);
+    v.classList.toggle("mapmode", prefs.tab === MAP);
+    if (prefs.tab === MAP) { renderMap(v); mapScrollIn(); return; }
     if (prefs.tab === SUM) renderSummary(v);
     else {
       const p = curPart();
@@ -1018,11 +1306,18 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   function autogrow(ta) { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; }
 
+  function inBook(s) { const p = doc.parts.find(x => x.id === "book"); return !!p && p.sections.includes(s); }
   function renderRow(s, b) {
     const row = el("div", "row grid"); row.dataset.bid = b.id;
     if (curBlock === b.id) row.classList.add("cur");
     const hd = btn("hd", "⋯", () => openBlockMenu(b.id, hd)); hd.setAttribute("aria-label", "Действия с блоком");
     const main = el("div", "main");
+    // «под вопросом» (задача 16): место абзаца ещё не решено — рамка и подпись; нажми на подпись — поправить
+    if (typeof b.q === "string" && inBook(s)) {
+      row.classList.add("q");
+      const qc = btn("qcap", "? под вопросом" + (b.q ? ": " + b.q : ""), () => editQ(b.id));
+      main.append(qc);
+    }
     let bt = null;
     if (b.t === "p") {
       bt = el("div", "bt"); bt.innerHTML = b.html || "";
@@ -1050,25 +1345,37 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     }
     const side = el("div", "side");
     for (const { c, anch } of orderedComments(b)) {
-      let quote = "";
-      if (anch && bt) { const a = [...bt.querySelectorAll(".cm")].filter(x => x.dataset.c === c.id).map(x => x.textContent).join(" "); quote = a; }
-      side.append(renderCallout(b, c, anch, quote));
+      let quote = "", lg = null;
+      if (anch && bt) {
+        const sp = [...bt.querySelectorAll(".cm")].filter(x => x.dataset.c === c.id);
+        quote = sp.map(x => x.textContent).join(" ");
+        const m = sp.length && linkedMk(sp[0]); if (m) lg = m.dataset.g;
+      }
+      side.append(renderCallout(b, c, anch, quote, lg));
     }
     row.append(hd, main, side);
     if (bmAt(b.id)) paintBm(row, true);
     return row;
   }
 
-  function renderCallout(b, c, anch, quote) {
+  // lg — группа «Идеи»/«Вопроса», если комментарий связан с пометкой (задача 14): тогда вместо «цитаты» — значок и подсвеченные слова
+  function renderCallout(b, c, anch, quote, lg) {
     const box = el("div", "callout"); box.dataset.c = c.id;
     const h = el("div", "ch");
     const num = el("span", "num", "?"); num.title = "Показать место в тексте";
     num.addEventListener("click", () => { const a = document.querySelector(`#view .cm[data-c="${c.id}"]`); if (a) { a.scrollIntoView({ block: "center" }); flash(a); } });
-    const q = el("span", "q", anch ? "«" + short(quote, 60) + "»" : (c.block ? "К блоку целиком" : "Текст, к которому он относился, удалён"));
-    const x = btn("x", "Удалить", () => {
-      if (!x.dataset.armed) { x.dataset.armed = "1"; x.textContent = "Точно удалить?"; setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "Удалить"; } }, 3000); return; }
+    let q;
+    if (lg) {
+      q = el("span", "q lk"); q.title = groupName(lg);
+      const ic = gIcon(lg); if (ic) q.append(ic, " ");
+      const w = el("span", "gname", short(quote, 60)); w.dataset.g = lg; q.append(w);
+    } else q = el("span", "q", anch ? "«" + short(quote, 60) + "»" : (c.block ? "К блоку целиком" : "Текст, к которому он относился, удалён"));
+    // × — удалить; первое нажатие спрашивает «Удалить?», второе (в течение 3 секунд) удаляет
+    const x = btn("x", "×", () => {
+      if (!x.dataset.armed) { x.dataset.armed = "1"; x.textContent = "Удалить?"; setTimeout(() => { if (x.isConnected) { delete x.dataset.armed; x.textContent = "×"; } }, 3000); return; }
       deleteComment(b.id, c.id);
     });
+    x.title = lg ? "Удалить пометку и комментарий" : "Удалить комментарий"; x.setAttribute("aria-label", x.title);
     h.append(num, q, x);
     const ta = el("textarea"); ta.value = c.text || ""; ta.rows = 1; ta.placeholder = "Комментарий…"; ta.setAttribute("aria-label", "Комментарий");
     ta.addEventListener("beforeinput", () => maybeSnap());
@@ -1087,6 +1394,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
 
   function refreshRow(bid) {
+    if (prefs.tab === MAP) { mapRefresh(); return null; }   // на «Карте» абзац — на панели (задача 16)
     const f = findBlock(bid); const old = document.querySelector(`#view .row[data-bid="${bid}"]`);
     if (!f || !old) return null;
     const nw = renderRow(f.s, f.b); old.replaceWith(nw); numberComments(); return nw;
@@ -1134,6 +1442,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const sel = getSelection();
     if (!sel || !sel.rangeCount) return;
     const r = sel.getRangeAt(0);
+    // курсор в абзаце на панели «Карты» — туда «В текст» вставит комментарий (задача 16)
+    if (r.collapsed && prefs.tab === MAP) { const n0 = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement; if (n0 && n0.closest && n0.closest(".mp-panel .bt")) mpCaret = r.cloneRange(); }
     if (!r.collapsed) {
       const rs = rangesFrom(r);
       if (rs.length) {
@@ -1210,8 +1520,71 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function clearMarks(given) {
     const rs = given || getRanges(); if (!rs.length) return hintSel();
     pushUndo();
-    for (const { bt, r } of rs) { [...bt.querySelectorAll(".mk, s")].filter(e => r.intersectsNode(e)).forEach(e => e.replaceWith(...e.childNodes)); tidy(bt); }
+    for (const { bt, r } of rs) {
+      const els = [...bt.querySelectorAll(".mk, s")].filter(e => r.intersectsNode(e));
+      // «Идея» и «Вопрос» снимаются вместе со своим комментарием (задача 14)
+      const cids = new Set(els.map(e => e.classList.contains("mk") && linkedCm(e)).filter(Boolean).map(a => a.dataset.c));
+      els.forEach(e => e.replaceWith(...e.childNodes));
+      if (cids.size) {
+        bt.querySelectorAll(".cm").forEach(a => { if (cids.has(a.dataset.c)) a.replaceWith(...a.childNodes); });
+        const row = bt.closest(".row"), f = row && findBlock(row.dataset.bid);
+        if (f) f.b.cm = f.b.cm.filter(c => !cids.has(c.id));
+      }
+      tidy(bt);
+    }
     afterMutate(rs.map(x => x.bt)); toast("Пометки сняты");
+  }
+
+  // ---------- «Идея» и «Вопрос» сразу с комментарием (задача 14) ----------
+  // Группы по id (переименование не мешает). Комментарий стоит ровно на тех же словах, что и пометка, — так они
+  // связаны и в странице, и в файлах глав: {[Идея: слова]}[^N]. Старые пометки без комментария остаются как были.
+  const LINKED = ["idea", "ask"];
+  // .cm → пометка «Идеи»/«Вопроса» на тех же словах (внутри или снаружи), иначе null
+  function linkedMk(a) {
+    const t = a.textContent.trim(); if (!t) return null;
+    for (const m of a.querySelectorAll(".mk")) if (LINKED.includes(m.dataset.g) && m.textContent.trim() === t) return m;
+    const o = a.parentElement && a.parentElement.closest(".mk");
+    return o && LINKED.includes(o.dataset.g) && o.textContent.trim() === t ? o : null;
+  }
+  // .mk «Идеи»/«Вопроса» → её комментарий на тех же словах, иначе null
+  function linkedCm(m) {
+    if (!LINKED.includes(m.dataset.g)) return null;
+    const t = m.textContent.trim(); if (!t) return null;
+    const o = m.parentElement && m.parentElement.closest(".cm");
+    if (o && o.textContent.trim() === t) return o;
+    for (const a of m.querySelectorAll(".cm")) if (a.textContent.trim() === t) return a;
+    return null;
+  }
+  // Выделил слова → «Идея»/«Вопрос» → окно с полем комментария. Пусто или «Отмена» — ничего не ставится.
+  // Выделение на несколько абзацев — пометка с комментарием встаёт в первом из них.
+  function markWithComment(gid, given) {
+    const rs = given || getRanges(); if (!rs.length) return hintSel();
+    const one = rs[0], more = rs.length > 1;
+    const head = el("span", "lk-head"); const ic = gIcon(gid); if (ic) head.append(ic);
+    const w = el("span", "gname", short(one.r.toString(), 140)); w.dataset.g = gid; head.append(w);
+    const ta = el("textarea"); ta.rows = 3; ta.placeholder = "Твой комментарий…"; ta.setAttribute("aria-label", groupName(gid) + ": комментарий");
+    let ok = null;
+    ta.addEventListener("input", () => { if (ok) ok.disabled = !ta.value.trim(); });
+    ta.addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (ok && !ok.disabled) ok.click(); } });
+    openModal(head, ta, [
+      { label: "Поставить", primary: true, disabled: true, fn: () => { const t = tidyLines(ta.value); if (!t) return false; applyLinked(gid, one, t, more); } },
+      { label: "Отмена" }
+    ]);
+    ok = modal.querySelector(".mact .primary");
+  }
+  function applyLinked(gid, { bt, r }, text, more) {
+    const row = bt.isConnected && bt.closest(".row"), f = row && findBlock(row.dataset.bid);
+    if (!f || r.collapsed) { toast("Текст изменился — выдели слова ещё раз"); return; }
+    pushUndo();
+    const cid = newId("c");
+    const a = document.createElement("span"); a.className = "cm"; a.dataset.c = cid;
+    const m = document.createElement("span"); m.className = "mk"; m.dataset.g = gid;
+    const fr = r.extractContents();
+    fr.querySelectorAll(".mk").forEach(x => x.replaceWith(...x.childNodes));
+    m.appendChild(fr); a.appendChild(m); r.insertNode(a); tidy(bt);
+    f.b.cm.push({ id: cid, text, at: nowISO(), block: false });
+    afterMutate([bt]);
+    toast(more ? "Поставлено в первом абзаце выделения" : "Пометка с комментарием поставлена");
   }
   function deleteText() {
     const rs = getRanges(); if (!rs.length) return hintSel();
@@ -1256,12 +1629,18 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const f = findBlock(bid); if (!f) return;
     pushUndo();
     f.b.cm = f.b.cm.filter(c => c.id !== cid);
+    let lk = false;
     if (f.b.t === "p" && f.b.html) {
       const t = document.createElement("template"); t.innerHTML = f.b.html;
-      t.content.querySelectorAll(".cm").forEach(a => { if (a.dataset.c === cid) a.replaceWith(...a.childNodes); });
+      // комментарий «Идеи»/«Вопроса» удаляется вместе с пометкой (задача 14): без комментария её не бывает
+      t.content.querySelectorAll(".cm").forEach(a => {
+        if (a.dataset.c !== cid) return;
+        const m = linkedMk(a); if (m) { lk = true; m.replaceWith(...m.childNodes); }
+        a.replaceWith(...a.childNodes);
+      });
       f.b.html = cleanHTML(t.innerHTML);
     }
-    touch(); refreshRow(bid); renderTabs(); toast("Комментарий удалён");
+    touch(); refreshRow(bid); renderTabs(); toast(lk ? "Пометка и комментарий удалены" : "Комментарий удалён");
   }
 
   // ---------- Блоки и разделы ----------
@@ -1390,6 +1769,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   const view = $("#view");
   view.addEventListener("beforeinput", e => {
     const bt = e.target && e.target.closest ? e.target.closest(".bt") : null;
+    // абзац на панели «Карты» (задача 16) правится всегда; Enter — перенос строки, абзац не делится
+    if (bt && bt.closest(".mp-panel")) {
+      const it = e.inputType || "";
+      if (it === "insertParagraph") { e.preventDefault(); document.execCommand("insertLineBreak"); return; }
+      if (it.startsWith("format") && !["formatBold", "formatItalic", "formatStrikeThrough"].includes(it)) { e.preventDefault(); return; }
+      maybeSnap(); return;
+    }
     if (!bt || !edit) return;
     const it = e.inputType || "";
     if (it === "insertParagraph") { e.preventDefault(); splitBlock(bt); return; }
@@ -1401,11 +1787,14 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const bt = e.target && e.target.closest ? e.target.closest(".bt") : null;
     if (!bt) return;
     const row = bt.closest(".row"); const f = row && findBlock(row.dataset.bid);
-    if (f) { f.b.html = cleanHTML(bt.innerHTML); touch(); }
+    if (f) {
+      f.b.html = cleanHTML(bt.innerHTML); touch();
+      if (bt.closest(".mp-panel")) { const l = document.querySelector(".mp-blen"); if (l) l.textContent = numFmt(lenOf(f.b)) + " знаков"; mapDrawSoon(); }
+    }
   });
   view.addEventListener("paste", e => {
     const bt = e.target && e.target.closest ? e.target.closest(".bt") : null;
-    if (!bt || !edit) return;
+    if (!bt || (!edit && !bt.closest(".mp-panel"))) return;
     e.preventDefault();
     const text = (e.clipboardData && e.clipboardData.getData("text/plain")) || "";
     maybeSnap();
@@ -1428,7 +1817,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   // ---------- Меню ----------
   const pop = $("#pop");
+  let popClose = null;   // что сделать, когда меню закроется (карта: блок, брошенный на главу, — на место)
   function openPop(anchor, items) {
+    popClose = null;
     pop.textContent = "";
     for (const it of items) {
       if (it.sep) { pop.append(el("hr")); continue; }
@@ -1461,7 +1852,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     pop.style.top = top + "px";
     const first = pop.querySelector("button:not(:disabled)"); if (first) try { first.focus({ preventScroll: true }); } catch (e) { }
   }
-  function closePop() { pop.hidden = true; }
+  function closePop() { pop.hidden = true; if (popClose) { const f = popClose; popClose = null; f(); } }
   document.addEventListener("pointerdown", e => { if (!pop.hidden && !pop.contains(e.target)) closePop(); });
   window.addEventListener("scroll", () => { if (!pop.hidden) closePop(); }, { passive: true });
   window.addEventListener("resize", () => { if (!pop.hidden) closePop(); });
@@ -1475,7 +1866,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Комментарий к блоку", fn: () => addBlockComment(bid) }
     ];
     if (f.b.t === "p") {
-      items.push({ type: "groups", label: "Пометить весь абзац", fn: gid => { const rs = wholeRange(bid); if (rs.length) applyGroup(gid, rs); else toast("Абзац пустой"); } });
+      items.push({ type: "groups", label: "Пометить весь абзац", fn: gid => { const rs = wholeRange(bid); if (!rs.length) toast("Абзац пустой"); else if (LINKED.includes(gid)) markWithComment(gid, rs); else applyGroup(gid, rs); } });
       items.push({ label: "Зачеркнуть весь абзац", fn: () => { const rs = wholeRange(bid); if (rs.length) strike(rs); else toast("Абзац пустой"); } });
       items.push({ label: "Снять пометки в абзаце", fn: () => { const rs = wholeRange(bid); if (rs.length) clearMarks(rs); } });
     }
@@ -1486,14 +1877,28 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     items.push({ sep: true });
     items.push({ label: "Переместить вверх", fn: () => moveBlock(bid, -1) });
     items.push({ label: "Переместить вниз", fn: () => moveBlock(bid, 1) });
+    items.push({ label: "Перенести в книгу…", fn: () => openMove(bid) });
+    if (f.p.id === "book") {
+      if (typeof f.b.q === "string") {
+        items.push({ label: "Подпись «под вопросом»…", fn: () => editQ(bid) });
+        items.push({ label: "Утвердить место", fn: () => { pushUndo(); delete f.b.q; touch(); refreshRow(bid); toast("Место утверждено"); } });
+      } else items.push({ label: "Под вопросом…", fn: () => editQ(bid) });
+    }
     items.push({ label: "Удалить блок", danger: true, confirm: "Нажми ещё раз, чтобы удалить", fn: () => deleteBlock(bid) });
     openPop(anchorBtn, items);
+  }
+  // Абзац книги «под вопросом»: поставить или поправить подпись
+  function editQ(bid) {
+    const f = findBlock(bid); if (!f) return;
+    openQ(f.b.q || "", cap => { pushUndo(); f.b.q = cap; touch(); if (prefs.tab === MAP) mapRefresh(); else refreshRow(bid); });
   }
   function openSectionMenu(sid, anchorBtn) {
     const f = findSection(sid); if (!f) return;
     const n = f.s.blocks.length;
     openPop(anchorBtn, [
       { label: "Переименовать", fn: () => { if (!edit) toggleEdit(true); focusTitle(sid); } },
+      // краткое описание главы — видно в окне «Перенести в книгу…» (задача 12)
+      f.p.id === "book" ? { label: "Краткое описание…", sub: short(secDesc(f.s), 60), fn: () => openDesc(sid) } : null,
       { label: "Добавить в конец: абзац", fn: () => insertBlock({ sid }, { id: newId("b"), t: "p", html: "", cm: [] }) },
       { label: "Добавить в конец: заметку", fn: () => insertBlock({ sid }, { id: newId("b"), t: "note", text: "", cm: [] }) },
       { label: "Добавить в конец: картинку", fn: () => pickImage({ sid }) },
@@ -1504,7 +1909,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Переместить раздел вверх", fn: () => moveSection(sid, -1) },
       { label: "Переместить раздел вниз", fn: () => moveSection(sid, 1) },
       { label: n ? `Удалить раздел (блоков: ${n})` : "Удалить раздел", danger: true, confirm: "Нажми ещё раз, чтобы удалить", fn: () => deleteSection(sid) }
-    ]);
+    ].filter(Boolean));
   }
   $("#more").addEventListener("click", () => {
     openPop($("#more"), [
@@ -1526,8 +1931,11 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   let modalOnClose = null;
   function openModal(title, body, actions, onClose) {
     modal.textContent = "";
-    const box = el("div", "mbox"); box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", title);
-    box.append(el("h3", "", title));
+    const box = el("div", "mbox"); box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
+    // заголовок — строка или готовый узел (окно «Идеи»/«Вопроса»: значок и выделенные слова вместо слов)
+    const h3 = el("h3"); if (typeof title === "string") h3.textContent = title; else h3.append(title);
+    box.setAttribute("aria-label", h3.textContent);
+    box.append(h3);
     if (body) box.append(body);
     const act = el("div", "mact");
     (actions || [{ label: "Закрыть" }]).forEach(a => {
@@ -1559,9 +1967,94 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     openModal("Как переносить через Телеграм", frag(ol, para("Пока файл не перенесён, на другом устройстве остаётся прежняя версия. Красная точка на кнопке «Экспорт» значит, что здесь есть правки, которых ещё нет в Телеграме.", "muted")));
   }
 
+  // ---------- Окно ⓘ (задача 13): всё о том, как пользоваться, — здесь, а не подсказками по всей странице ----------
+  // Что значат группы (по id, а не по названию: группу можно переименовать). Свои группы — только названием.
+  const GROUP_MEAN = {
+    idea: "твоя идея — всегда с твоим комментарием",
+    del: "предлагаешь убрать",
+    ask: "твой вопрос — всегда с твоим комментарием",
+    keep: "утверждено тобой: ни Claude, ни другой ИИ это не меняет",
+    redo: "этот кусок переписать"
+  };
+  const HOWTO = [
+    ["Пометки и комментарии", [
+      "Выдели слова и нажми на панели группу, «Зачеркнуть», «Комментарий», «Удалить» или «Снять». «Отменить» возвращает последний шаг (Ctrl+Z на компьютере).",
+      "«Идея» и «Вопрос» ставятся сразу с комментарием: откроется поле, напиши, что имеешь в виду. Пустое поле или «Отмена» — пометки нет. «Снять» на этих словах или × у выноски убирает и пометку, и комментарий.",
+      "Комментарий без выделения — ко всему абзацу, на котором стоишь. Комментарии видны выносками справа (на телефоне — под абзацем); номер на выноске показывает место в тексте, × удаляет (нажми второй раз, чтобы подтвердить).",
+      "«⋯» слева от абзаца — действия с ним: закладка, комментарий ко всему абзацу, пометить или зачеркнуть весь абзац, вставить ниже абзац, заметку или картинку, переместить, «Перенести в книгу…», удалить.",
+      "«⋯» у названия раздела — переименовать, «Краткое описание…» (видно в «Перенести в книгу…»; пустое — описание от Claude или начало текста), «Текст для Claude: этот раздел…», новый раздел, переместить, удалить.",
+      "«Правка текста» включает набор прямо в абзацах: Enter делит абзац, Backspace в начале абзаца склеивает его с предыдущим. «+ Добавить» — картинка, заметка, абзац или раздел после выбранного абзаца."
+    ]],
+    ["Чтение", [
+      "Каждая вкладка открывается там, где ты остановился (место своё на каждом устройстве).",
+      "«Закладки»: поставить закладку здесь, перейти к закладке или к разделу, «Вернуться, где был», «Изменить закладки…» (название, удалить). Без названия закладка называется началом своего абзаца; закладки переезжают с «Экспортом».",
+      "«Сводка» — все пометки, комментарии, заметки и картинки одним списком; нажми на строку — перейдёшь к месту. Сверху — фильтр по видам и «Скопировать текст для Claude»."
+    ]],
+    ["Настройки — «⋯» справа от вкладок", [
+      "«Группы цветов…»: у группы цвет текста и подсветка, каждый включается галочкой; для тёмной темы оттенки подбираются сами. Удаление группы снимает её пометки с текста.",
+      "«Порядок кнопок на панели…»: частые кнопки — в начало, чтобы не листать панель. Порядок свой на каждом устройстве.",
+      "«Это устройство…»: название попадает в имя файла «Экспорта» и показывает, откуда пришли правки.",
+      "«Вернуть как было до импорта…» — резервная копия, которая делается перед «Импортом» и новой версией текста."
+    ]],
+    ["Карта", [
+      "«Карта» — книга блок-схемой: по стволу сверху вниз эпохи, от них влево и вправо главы, под главами абзацы (один блок — один абзац). Поле поделено на полосы эпох: что лежит в полосе (главы, ветви, блоки концепции, подписи), то и в этой эпохе.",
+      "Колесо мыши или два пальца — масштаб (плавно, раскладка не меняется; совсем мелко текст абзацев становится серыми полосками); «−», «+» сверху — тоже; «Вписать всё» — вся карта на экране. Двигать карту — правой кнопкой мыши (на телефоне — пальцем); мини-карта в углу — нажми туда, куда перейти.",
+      "Переложить: мышью — просто тяни блок, главу, ветвь, подпись или эпоху (эпоха ходит по стволу вверх-вниз и двигает границу полосы); на телефоне — подержи палец полсекунды, потом тяни. Отпущенное встаёт в клетку невидимой сетки; у края экрана карта едет сама; Esc — отмена. Глава едет вместе со своими абзацами.",
+      "Выделить несколько: левой кнопкой по пустому месту тяни рамку (на телефоне — подержи палец на пустом месте и веди) или Shift+щелчок по блокам. Тянешь любой выделенный — едут все. Esc или щелчок по пустому месту — снять выделение.",
+      "Порядок в книге — по высоте: что выше, то раньше (в одном ряду — левее). Линия-нить идёт через абзацы главы в этом порядке. Брось абзац на чужую главу или на её абзац — «Привязать сюда», «Под вопросом…» (пунктир с подписью: место ещё не решено; в книге такой абзац в рамке) или «Отмена». На свою главу или свой абзац — встанет сразу под ним. На правую панель — уйдёт с карты.",
+      "Перестановки — черновик: книга не меняется, пока не нажмёшь сверху «Сохранить в книгу» (там же — сколько изменено и «Сбросить»: места и порядок как до перестановок). Абзацы, которые переедут, отмечены полоской слева. Черновик и места на карте переезжают с «Экспортом».",
+      "Правая панель: без выделения — книга по эпохам и разделы концепции. Нажми на раздел — его абзацы, на абзац — его текст; «←» наверху — на уровень выше. Абзац из списка тяни на карту (на телефоне — подержи и тяни): на пустое место — ляжет в эту эпоху, на главу — то же меню, что выше. Левый край панели тянется — шире или уже.",
+      "«+ Глава» — новая пустая глава посреди экрана (в книге встанет по высоте; у эпохи на панели — «+ Глава» в конец этой эпохи). Название главы правится на её панели. «+ Блок» — новый пустой абзац посреди экрана (в концепции, раздел «С карты»): текст пиши справа, потом тяни к главе. «+ Текст» или двойной щелчок по пустому месту — серая подпись на поле: подписать эпоху, записать мысль.",
+      "На блоке — краткая подпись, цветные точки групп пометок, кружок с числом комментариев и число знаков абзаца; у главы — то же по всей главе (у точек — сколько пометок). Подпись курсивом — первые слова абзаца, своей подписи у него пока нет.",
+      "Нажми на блок — справа (на телефоне — снизу) его текст: правится сразу, как в книге, с теми же кнопками пометок; «Кратко» — своя подпись блока. Там же «Под вопросом…» / «Утвердить место» и «Отвязать»; у абзаца концепции — «В эпоху…» и «Убрать с карты». У каждого комментария — «Копировать» и «В текст»: выделенная часть комментария или весь — туда, где стоит курсор в абзаце, иначе в конец абзаца. Нажми на кружок с числом — панель откроется на комментариях.",
+      "Эпохи: нажми на эпоху или её название на полосе — название, главы, ветви, концепция в ней, «+ Ветвь», «+ Эпоха после», «Удалить эпоху» (всё из неё — в эпоху выше). У главы — «Начать здесь новую эпоху». «+ эпоха» внизу ствола — новая эпоха в конце. В обзоре — «Разложить заново» (всё по порядку книги, концепция уходит с карты). Место, масштаб карты и ширина панели — свои на каждом устройстве.",
+      "В книге: «⋯» у абзаца — «Под вопросом…» или «Утвердить место»; подпись над таким абзацем нажимается — поправить."
+    ]],
+    ["Перенос и Claude", [
+      LOCAL
+        ? "«Экспорт» → «Сохранить файл .json»: файл со всем (текст, пометки, комментарии, картинки, закладки) ляжет в папку «Экспорт» проекта, откроется Проводник — перетащи файл в Телеграм → «Избранное». На другом устройстве — «Импорт» этого файла."
+        : "«Экспорт» → «Сохранить файл .json»: файл со всем (текст, пометки, комментарии, картинки, закладки). Появится «Поделиться» — выбери Телеграм → «Избранное»; файл скачался — отправь его туда. На другом устройстве — «Импорт» этого файла.",
+      "«Импорт» заменяет данные этого устройства данными из файла; прежние можно вернуть через «⋯» → «Вернуть как было до импорта…».",
+      "«Текст для Claude» — весь текст с пометками («Экспорт» или «Сводка») или одна глава («⋯» у названия раздела). Пришли его Claude в чат — он поправит только эти главы. Так же выглядят файлы глав в папке «Текст».",
+      "Claude обновил главы — сверху появится «Загрузить новую версию»: заменятся только изменённые главы, остальные с твоими пометками останутся как есть."
+    ]]
+  ];
+  function openInfo() {
+    const box = el("div", "info"); box.style.display = "flex"; box.style.flexDirection = "column"; box.style.gap = "14px";
+    const sec = (title, ...nodes) => { const d = el("div", "info-sec"); d.append(el("h4", "", title), ...nodes); box.append(d); };
+    // сначала короткое и нужное чаще (цвета, данные, перенос), ниже — как пользоваться
+    const lg = el("div", "legend");
+    for (const g of doc.groups) {
+      const n = el("span", "gname"); n.dataset.g = g.id;
+      const ic = gIcon(g.id); if (ic) n.append(ic, " ");
+      n.append(g.name);
+      lg.append(n, el("span", "gmean" + (GROUP_MEAN[g.id] ? "" : " muted"), GROUP_MEAN[g.id] || "своя группа"));
+    }
+    sec("Цвета групп", lg);
+    sec("Данные этого устройства", el("p", "", statusLine()), el("p", "muted", statLine(stats(doc)) + "."));
+    const uns = unsynced();
+    const row = el("div", "mact"); row.style.justifyContent = "flex-start";
+    row.append(btn(uns ? "primary" : "", "Экспорт…", () => { closeModal(); openExport(); }), btn("", "Как переносить", () => { closeModal(); openHelp(); }));
+    sec("Перенос на другое устройство",
+      el("p", uns ? "warn" : "muted", uns ? "Есть правки, которых ещё нет в Телеграме — нажми «Экспорт»." : prefs.syncedAt ? "Всё выгружено: " + fmt(prefs.syncedAt) + "." : "Правок пока нет."),
+      row);
+    for (const [title, items] of HOWTO) { const ul = el("ul"); items.forEach(t => ul.append(el("li", "", t))); sec(title, ul); }
+    openModal("Как пользоваться", box, [{ label: "Закрыть", primary: true }]);
+    const ok = modal.querySelector(".mact:last-child .primary"); if (ok) try { ok.focus({ preventScroll: true }); } catch (e) { }
+  }
+
   function exportPayload() {
     const imgs = {}; usedImageIds(doc).forEach(id => { if (images[id]) imgs[id] = images[id]; });
-    return JSON.stringify({ ...doc, exportedAt: nowISO(), exportedOn: prefs.device, images: imgs });
+    // у глав без своего описания — описание Claude (desc0): на телефоне текста от Claude нет, а в окне
+    // «Перенести в книгу…» описания глав нужны (задача 12). В данных этого устройства ничего не меняется.
+    const parts = doc.parts.map(p => ({ ...p, sections: p.sections.map(s => {
+      let o = s;
+      if (p.id === "book" && !s.desc) { o = { ...s }; const d0 = seedDesc(s.key || s.id) || s.desc0; delete o.desc0; if (d0) o.desc0 = d0; }
+      // подписи Claude к абзацам (задача 16) — sum0: на телефоне текста от Claude нет, а на «Карте» они нужны
+      const bl = s.blocks.map(b => { const s0 = seedSum(b) || descLine(b.sum0); return s0 && s0 !== b.sum0 ? { ...b, sum0: s0 } : b; });
+      return { ...o, blocks: bl };
+    }) }));
+    return JSON.stringify({ ...doc, parts, exportedAt: nowISO(), exportedOn: prefs.device, images: imgs });
   }
   function openExport() {
     const json = exportPayload();
@@ -1575,13 +2068,10 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const r1 = el("div", "mact"); r1.style.justifyContent = "flex-start"; r1.append(b1);
     const r2 = el("div", "mact"); r2.style.justifyContent = "flex-start"; r2.append(b2, b3);
     openModal("Экспорт", frag(
-      para(`<b>Файл данных</b> со всем содержимым: текст, пометки, комментарии, картинки. Размер около ${sizeText(new Blob([json]).size)}.`),
+      para(`<b>Файл данных</b> · около ${sizeText(new Blob([json]).size)}`),
       r1,
-      para(LOCAL
-        ? "Файл ляжет в папку «Экспорт» проекта, и откроется Проводник с ним: перетащи его в «Избранное» в Телеграме. На телефоне открой «Книгу Тишины» и нажми «Импорт»."
-        : "Если появится меню «Поделиться», выбери Телеграм → «Избранное». Если файл скачался, отправь его в «Избранное» в Телеграме. На другом устройстве нажми «Импорт».", "muted"),
       el("hr"),
-      para("<b>Текст для Claude</b>: все разделы с пометками в виде обычного текста, чтобы попросить внести правки. Одну главу — через «⋯» у её названия → «Текст для Claude»."),
+      para("<b>Текст для Claude</b>"),
       r2
     ), [{ label: "Закрыть" }]);
   }
@@ -1653,10 +2143,27 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
 
   // «Текст для Claude»: все разделы в формате файлов папки «Текст» — Claude берёт из него только нужные главы
+  // Памятка для ИИ в начале «Текста для Claude» (задача 15): что значат пометки и что «Важно» не менять.
+  // Названия — текущие названия групп (по id); удалённой группы нет и в памятке; свои группы — только названием.
+  // Только в выгружаемом тексте: в файлах глав, в sectionText/canonText и в сравнении глав её нет (tekst.py пропускает строки <!-- … -->).
+  function aiNote() {
+    const nm = id => { const g = doc.groups.find(x => x.id === id); return g ? g.name.replace(/-{2,}/g, "—") : null; };
+    const L = ["<!-- Текст книги «Книга Тишины» с пометками автора. Правила для ИИ: -->"];
+    if (nm("keep")) L.push(`<!-- [${nm("keep")}: …] — утверждено автором. Не менять ни слова, даже когда переписываешь соседние места. -->`);
+    const ia = ["idea", "ask"].map(nm).filter(Boolean);
+    if (ia.length) L.push(`<!-- ${ia.map(n => `[${n}: …]`).join(", ")} — у ${ia.length > 1 ? "каждой" : "неё"} есть комментарий автора (сноска [^N] в конце раздела); суть пометки — в нём. -->`);
+    const dr = [nm("del") && `[${nm("del")}: …] — автор предлагает убрать.`, nm("redo") && `[${nm("redo")}: …] — этот кусок переписать.`].filter(Boolean);
+    if (dr.length) L.push(`<!-- ${dr.join(" ")} -->`);
+    const own = doc.groups.filter(g => !(g.id in GROUP_MEAN)).map(g => g.name.replace(/-{2,}/g, "—"));
+    if (own.length) L.push(`<!-- Свои группы автора: ${own.join(", ")}. -->`);
+    L.push("<!-- ~~…~~ — зачёркнуто автором. {слова}[^N] — комментарий к словам; строка [^N] под абзацем — комментарий ко всему абзацу. -->");
+    L.push("<!-- Строки, начинающиеся с «> », — заметки автора, не текст книги. -->");
+    L.push("<!-- Строка «под вопросом: …» над абзацем — место абзаца в книге ещё не решено; после двоеточия — сомнение автора. Абзац — часть главы. -->");
+    L.push(`<!-- Отвечая, сохраняй этот формат${nm("keep") ? ` и пометки «${nm("keep")}»` : ""}. -->`);
+    return L;
+  }
   function buildMarkdown() {
-    const L = [`<!-- ${doc.title}: текст с пометками для Claude. Выгружено ${fmt(nowISO())} с устройства «${prefs.device}». ` +
-      `Формат — как у файлов в папке «Текст» (Текст/README.md): [Группа: …] — пометка, ~~…~~ — зачёркнуто, ` +
-      `{…}[^N] — комментарий к словам, [^N] отдельной строкой — к абзацу, «> » — заметка, тексты комментариев — в конце раздела. -->`];
+    const L = [...aiNote(), `<!-- ${doc.title}: выгружено ${fmt(nowISO())} с устройства «${prefs.device}». Формат — как у файлов в папке «Текст» (Текст/README.md). -->`];
     for (const p of doc.parts) {
       if (!p.sections.length) continue;
       L.push("", `<!-- Часть: ${partFolder(p)} -->`);
@@ -1667,12 +2174,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   // Одна глава для Claude (⋯ у названия раздела) — пришли её в чат, и Claude поправит только её
   function openSectionText(sid) {
     const f = findSection(sid); if (!f) return;
-    const md = `<!-- Часть: ${partFolder(f.p)} -->\n` + sectionText(f.s);
+    const md = aiNote().join("\n") + `\n<!-- Часть: ${partFolder(f.p)} -->\n` + sectionText(f.s);
     const ta = el("textarea", "big"); ta.value = md; ta.readOnly = true;
-    openModal("Текст для Claude: " + short(f.s.title || "раздел", 40), frag(
-      para("Этот раздел с пометками и комментариями. Скопируй его и пришли Claude в чат (или сохрани файлом) — он поправит только эту главу. Так же выглядит файл главы в папке «Текст».", "muted"),
-      ta
-    ), [
+    openModal("Текст для Claude: " + short(f.s.title || "раздел", 40), ta, [
       { label: "Скопировать", primary: true, fn: () => { copyText(md); return false; } },
       { label: "Сохранить .md", fn: () => { saveFile(`Книга_Тишины_${safeName(short(f.s.title || "раздел", 40))}_для_Claude.md`, md); return false; } },
       { label: "Закрыть" }
@@ -1696,7 +2200,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function pickJSON() { const i = $("#jsonfile"); i.value = ""; i.click(); }
   $("#b-import").addEventListener("click", () => pickJSON());
   $("#b-export").addEventListener("click", () => openExport());
-  $("#b-help").addEventListener("click", () => openHelp());
+  $("#info").addEventListener("click", () => openInfo());
   $("#site-import").addEventListener("click", () => pickJSON());
   $("#site-help").addEventListener("click", () => openHelp());
   $("#jsonfile").addEventListener("change", async e => {
@@ -1725,7 +2229,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     doc = normalizeDoc(d);
     prefs.syncedAt = nowISO(); savePrefs();
     undoStack = []; curBlock = null; seedDismissed = false;
-    if (prefs.tab !== SUM && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
+    if (prefs.tab !== SUM && prefs.tab !== MAP && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
     await saveNow(); renderAll(); toast("Данные из файла загружены");
   }
   async function openRestore() {
@@ -1748,7 +2252,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   function openDevice() {
     const i = el("input"); i.type = "text"; i.value = prefs.device; i.maxLength = 40; i.setAttribute("aria-label", "Название устройства");
-    openModal("Название этого устройства", frag(para("Название попадает в имя файла при экспорте и помогает понять, откуда пришли правки.", "muted"), i), [
+    openModal("Название этого устройства", i, [
       { label: "Сохранить", primary: true, fn: () => { prefs.device = i.value.trim() || guessDevice(); savePrefs(); renderStatus(); toast("Сохранено"); } },
       { label: "Отмена" }
     ]);
@@ -1759,13 +2263,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const body = el("div"); body.style.display = "flex"; body.style.flexDirection = "column"; body.style.gap = "8px";
     const draw = () => {
       body.textContent = "";
-      body.append(para("У группы два цвета: «Текст» красит буквы выделенного, «Подсветка» — фон под ними, как маркером. Галочка включает и выключает каждый. Поле с названием показывает, как будет выглядеть пометка. Для тёмной темы оттенки подбираются сами.", "muted"));
       doc.groups.forEach(g => {
         const row = el("div", "grow");
         const n = el("input"); n.type = "text"; n.value = g.name; n.maxLength = 30; n.className = "gname"; n.dataset.g = g.id; n.setAttribute("aria-label", "Название группы");
         n.addEventListener("input", () => { g.name = n.value.trim() || "Группа"; touch(); });
         const del = btn("", "Удалить", () => {
-          if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Точно?"; return; }
+          if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Точно? Пометки снимутся"; return; }
           removeGroup(g.id); draw();
         });
         const warn = el("span", "gwarn", "Без цвета текста и без подсветки пометку не видно в тексте.");
@@ -1790,7 +2293,6 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         row.append(n, del, opts, warn); body.append(row);
       });
       body.append(btn("", "+ Добавить группу", () => { doc.groups.push(fixGroup({ id: newId("g"), name: "Новая группа", color: "#7a5cc4" })); applyGroupStyles(); touch(); draw(); }));
-      body.append(para("При удалении группы её пометки снимаются с текста.", "muted"));
     };
     draw();
     openModal("Группы цветов", body, [{ label: "Готово", primary: true }], () => { renderToolbar(); renderView(true); renderTabs(); });
@@ -1830,10 +2332,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       prefs.tbOrder = keys; savePrefs(); renderToolbar(); draw(key, act);
     };
     draw();
-    openModal("Порядок кнопок на панели", frag(
-      para("Подними наверх кнопки, которые нажимаешь чаще всего, — они встанут в начало панели, и листать её не придётся. Порядок свой на каждом устройстве: на телефоне и на компьютере он может быть разный.", "muted"),
-      list
-    ), [
+    openModal("Порядок кнопок на панели", list, [
       { label: "Обычный порядок", fn: () => { prefs.tbOrder = null; savePrefs(); renderToolbar(); draw(); toast("Порядок кнопок как был сначала"); return false; } },
       { label: "Готово", primary: true }
     ]);
@@ -1893,15 +2392,24 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const items = [];
     for (const p of doc.parts) for (const s of p.sections) for (const b of s.blocks) {
       const base = { p: p.id, bid: b.id, path: `${p.title} › ${s.title || "Без названия"}` };
-      const anch = {};
+      const anch = {}, lk = {};
       if (b.t === "p") {
         const t = document.createElement("template"); t.innerHTML = b.html || "";
-        t.content.querySelectorAll(".mk").forEach(m => items.push({ ...base, k: "g", g: m.dataset.g, text: m.textContent }));
+        // «Идея»/«Вопрос» с комментарием — одна запись (задача 14): пометка не идёт отдельной строкой
+        const used = new Set();
+        t.content.querySelectorAll(".cm").forEach(a => {
+          anch[a.dataset.c] = ((anch[a.dataset.c] || "") + " " + a.textContent).trim();
+          const m = !lk[a.dataset.c] && linkedMk(a); if (m) { used.add(m); lk[a.dataset.c] = { g: m.dataset.g, text: m.textContent }; }
+        });
+        t.content.querySelectorAll(".mk").forEach(m => { if (!used.has(m)) items.push({ ...base, k: "g", g: m.dataset.g, text: m.textContent }); });
         t.content.querySelectorAll("s").forEach(m => items.push({ ...base, k: "s", text: m.textContent }));
-        t.content.querySelectorAll(".cm").forEach(a => { anch[a.dataset.c] = ((anch[a.dataset.c] || "") + " " + a.textContent).trim(); });
       } else if (b.t === "note") items.push({ ...base, k: "n", text: b.text || "(пустая заметка)" });
       else if (b.t === "img") items.push({ ...base, k: "i", text: b.cap || "Картинка без подписи" });
-      orderedComments(b).forEach(({ c, anch: a }) => items.push({ ...base, k: "c", text: c.text || "(пустой комментарий)", quote: a ? anch[c.id] : (c.block ? "к блоку целиком" : "текст удалён") }));
+      orderedComments(b).forEach(({ c, anch: a }) => {
+        const L = a && lk[c.id];
+        if (L) items.push({ ...base, k: "g", g: L.g, text: L.text, note: c.text || "(пустой комментарий)", lc: true });
+        else items.push({ ...base, k: "c", text: c.text || "(пустой комментарий)", quote: a ? anch[c.id] : (c.block ? "к блоку целиком" : "текст удалён") });
+      });
     }
     return items;
   }
@@ -1909,9 +2417,10 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const items = collectItems();
     const wrap = el("div", "sum");
     wrap.append(el("h2", "", "Сводка пометок"));
-    wrap.append(para("Все пометки, комментарии, заметки и картинки в одном списке. Нажми на строку, чтобы перейти к месту в тексте.", "muted"));
     const kinds = [{ id: "all", name: "Все" }, ...doc.groups.map(g => ({ id: "g:" + g.id, name: g.name, g: g.id })), { id: "s", name: "Зачёркнутое" }, { id: "c", name: "Комментарии" }, { id: "n", name: "Заметки" }, { id: "i", name: "Картинки" }];
-    const count = k => k === "all" ? items.length : items.filter(it => (k.startsWith("g:") ? it.k === "g" && it.g === k.slice(2) : it.k === k)).length;
+    // пометка с комментарием видна и в своей группе, и в «Комментариях»; в «Все» — один раз
+    const match = (it, k) => k === "all" || (k.startsWith("g:") ? it.k === "g" && it.g === k.slice(2) : it.k === k || (k === "c" && !!it.lc));
+    const count = k => items.filter(it => match(it, k)).length;
     const fr = el("div", "sum-row"); fr.setAttribute("role", "group"); fr.setAttribute("aria-label", "Фильтр");
     for (const k of kinds) {
       const b = btn(k.g ? "chip" : "", k.name, () => { sumFilter = k.id; renderView(true); });
@@ -1925,19 +2434,23 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     act.append(btn("primary", "Скопировать текст для Claude", () => copyText(buildMarkdown())));
     act.append(btn("", "Экспорт…", () => openExport()));
     wrap.append(act);
-    const list = items.filter(it => sumFilter === "all" || (sumFilter.startsWith("g:") ? it.k === "g" && it.g === sumFilter.slice(2) : it.k === sumFilter));
-    if (!list.length) wrap.append(para("Здесь пока пусто. Выдели текст во вкладке с главами и выбери группу на панели.", "muted"));
+    const list = items.filter(it => match(it, sumFilter));
+    if (!list.length) wrap.append(para("Здесь пока пусто.", "muted"));
     else {
       const ul = el("div", "sum-list");
       for (const it of list) {
         const b = btn("sum-item", null, () => jumpTo(it.p, it.bid));
         let kind;
-        if (it.k === "g") { kind = el("span", "sum-kind gname", groupName(it.g)); kind.dataset.g = it.g; }
+        const ic = it.k === "g" ? gIcon(it.g) : null;
+        // у «Идеи», «Вопроса» и «Важно» — значок вместо названия, сразу за ним подсвеченные слова (задача 14)
+        if (ic) { kind = el("span", "sum-kind sum-ic"); kind.append(ic); kind.title = groupName(it.g); kind.setAttribute("aria-label", groupName(it.g)); b.classList.add("ic"); }
+        else if (it.k === "g") { kind = el("span", "sum-kind gname", groupName(it.g)); kind.dataset.g = it.g; }
         else kind = el("span", "sum-kind", { s: "Зачёркнуто", c: "Комментарий", n: "Заметка", i: "Картинка" }[it.k]);
         const tx = el("span", "sum-text");
         if (it.k === "g") { const m = el("span", "gname", short(it.text, 260)); m.dataset.g = it.g; tx.append(m); }
         else tx.textContent = short(it.text, 260);
         if (it.k === "s") tx.style.textDecoration = "line-through";
+        if (it.lc) tx.append(el("span", "sum-note", short(it.note, 400)));
         if (it.k === "c" && it.quote) { tx.append(el("br")); tx.append(el("span", "sum-q", "«" + short(it.quote, 120) + "»")); }
         b.append(kind, tx, el("span", "sum-path", it.path));
         ul.append(b);
@@ -2033,7 +2546,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function readingPos() {
     const y = Math.round(window.scrollY);
-    if (prefs.tab === SUM || barNow() > barStuck() + 2) return { y };   // в самом верху страницы хватает прокрутки
+    if (prefs.tab === SUM || prefs.tab === MAP || barNow() > barStuck() + 2) return { y };   // в самом верху страницы хватает прокрутки
     const row = readingRow(), f = row && findBlock(row.dataset.bid);
     if (!f) return { y };
     return { ...refOf(f), dy: Math.round(row.getBoundingClientRect().top - barNow()), y };
@@ -2047,6 +2560,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     if (s !== posLast) { posLast = s; savePrefs(); }
   }
   function restorePos(pos) {
+    if (prefs.tab === MAP) { mapScrollIn(); return; }   // на «Карте» своё место и масштаб (prefs.mapView)
     pos = pos || (prefs.pos && prefs.pos[prefs.tab]);
     if (!pos) { window.scrollTo(0, 0); return; }
     if (prefs.tab !== SUM && (pos.bid || pos.snip)) {
@@ -2103,7 +2617,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   // Абзац «здесь»: выбранный, если он на экране, иначе первый видимый под панелью
   function hereBlock() {
-    if (prefs.tab === SUM) return null;
+    if (prefs.tab === SUM || prefs.tab === MAP) return null;
     if (curBlock) {
       const row = document.querySelector(`#view .row[data-bid="${curBlock}"]`);
       if (row) { const r = row.getBoundingClientRect(); if (r.bottom > barNow() && r.top < window.innerHeight) return findBlock(curBlock); }
@@ -2112,7 +2626,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function openBmMenu() {
     const anchor = $("#bm-btn"), items = [];
-    if (prefs.tab !== SUM) {
+    if (prefs.tab !== SUM && prefs.tab !== MAP) {
       const f = hereBlock(), k = f && bmAt(f.b.id);
       if (k) items.push({ label: "Убрать закладку здесь", sub: bmLabel(k), fn: () => removeBm(k.id) });
       else items.push({ label: "Поставить закладку здесь", sub: f ? (short(blockText(f.b), 60) || f.s.title) : "", disabled: !f, fn: () => addBm(f.b.id) });
@@ -2127,7 +2641,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const p = curPart();
     sep();
     if (p && p.sections.length > 1) items.push({ label: "К разделу…", fn: () => openSecMenu() });
-    if (prefs.tab !== SUM) items.push({ label: "В начало вкладки", fn: () => { savePos(); backPos = { tab: prefs.tab, pos: prefs.pos && prefs.pos[prefs.tab] }; posHold = 0; window.scrollTo(0, 0); } });
+    if (prefs.tab !== SUM && prefs.tab !== MAP) items.push({ label: "В начало вкладки", fn: () => { savePos(); backPos = { tab: prefs.tab, pos: prefs.pos && prefs.pos[prefs.tab] }; posHold = 0; window.scrollTo(0, 0); } });
     if (list.length) items.push({ label: "Изменить закладки…", fn: openBmEdit });
     if (items.length && items[items.length - 1].sep) items.pop();
     if (!items.length) items.push({ label: "Закладки ставятся на вкладках с текстом", disabled: true, fn: () => { } });
@@ -2143,7 +2657,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const draw = () => {
       list.textContent = "";
       const all = bmSorted();
-      if (!all.length) { list.append(para("Закладок нет. Поставить закладку: кнопка «Закладки» → «Поставить закладку здесь» или «⋯» у абзаца.", "muted")); list.style.border = "0"; return; }
+      if (!all.length) { list.append(para("Закладок нет.", "muted")); list.style.border = "0"; return; }
       for (const k of all) {
         const f = locate(k), row = el("div", "bm-row");
         const path = el("span", "bm-path" + (f ? "" : " lost"), f ? bmPath(k, f) : "Абзац этой закладки удалён");
@@ -2159,11 +2673,1644 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       }
     };
     draw();
-    openModal("Закладки", frag(para("Без названия закладка называется началом своего абзаца. Закладки переносятся на другое устройство вместе с файлом «Экспорт», а место, где ты остановился, у каждого устройства своё.", "muted"), list), [{ label: "Готово", primary: true }]);
+    openModal("Закладки", list, [{ label: "Готово", primary: true }]);
     // фокус на «Готово», а не на поле названия: на телефоне не выскакивает клавиатура
     const ok = modal.querySelector(".mact .primary"); if (ok) try { ok.focus({ preventScroll: true }); } catch (e) { }
   }
   $("#bm-btn").addEventListener("click", openBmMenu);
+
+  // ---------- Перенос в книгу и краткие описания глав (задача 12) ----------
+  // «⋯» у абзаца → «Перенести в книгу…»: абзац или несколько подряд (до конца раздела) уезжают в главу книги
+  // или в новый раздел — с пометками, комментариями, заметками и картинками; закладки едут вместе с абзацами.
+  // Всё — один шаг «Отменить». Описание главы: своё (⋯ у названия → «Краткое описание…»), иначе от Claude
+  // (строка desc в файле главы; на телефоне — desc0 из «Экспорта»), иначе начало текста раздела.
+  function descLine(s) { return String(s || "").replace(/\s+/g, " ").trim().slice(0, 300); }
+  function seedDesc(key) { const e = key ? BOOK.find(x => x.key === key) : null; return e ? descLine(e.desc) : ""; }
+  function autoDesc(s) {
+    const b = s.blocks.find(x => (x.t === "p" || x.t === "note") && blockText(x));
+    return b ? short(blockText(b), 80) : s.blocks.length ? "Без текста" : "Пустой раздел";
+  }
+  function defDesc(s) { return seedDesc(s.key || s.id) || s.desc0 || autoDesc(s); }
+  function secDesc(s) { return s.desc || defDesc(s); }
+  // Абзац одной строкой: начало текста; у заметки и картинки сказано, что это они
+  function blockLabel(b, n) {
+    const t = short(blockText(b), n || 40);
+    if (b.t === "note") return t ? "заметка «" + t + "»" : "пустая заметка";
+    if (b.t === "img") return t ? "картинка «" + t + "»" : "картинка без подписи";
+    return t ? "«" + t + "»" : "пустой абзац";
+  }
+  function afterLabel(b) {
+    const t = short(blockText(b), 40);
+    if (b.t === "note") return t ? "После заметки: «" + t + "»" : "После пустой заметки";
+    if (b.t === "img") return t ? "После картинки: «" + t + "»" : "После картинки без подписи";
+    return t ? "После абзаца: «" + t + "»" : "После пустого абзаца";
+  }
+
+  function openDesc(sid) {
+    const f = findSection(sid); if (!f) return;
+    const s = f.s, def = defDesc(s);
+    const i = el("textarea"); i.rows = 3; i.value = s.desc || ""; i.maxLength = 200;
+    i.placeholder = short(def, 140); i.setAttribute("aria-label", "Краткое описание раздела");
+    const save = () => {
+      const v = descLine(i.value);
+      if (v === (s.desc || "")) return;
+      pushUndo();
+      if (v) s.desc = v; else delete s.desc;
+      touch(); toast(v ? "Описание сохранено" : "Описание — снова по умолчанию");
+    };
+    // описание — одна строка: Enter сохраняет, а не переносит строку
+    i.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); save(); closeModal(); } });
+    openModal("Краткое описание: " + short(s.title || "Без названия", 50), i, [
+      { label: "Сохранить", primary: true, fn: save },
+      { label: "Отмена" }
+    ]);
+  }
+
+  let mvLast = null;   // в какой раздел книги переносил в прошлый раз (id) — пока открыта страница
+  function openMove(bid) {
+    const f = findBlock(bid); if (!f) return;
+    const src = f.s, start = f.i, max = src.blocks.length - start;
+    const book = doc.parts.find(p => p.id === "book"), secs = book ? book.sections : [];
+    let n = 1, to = secs.some(s => s.id === mvLast) ? mvLast : null, place = "end", ok = null;
+    const moving = () => src.blocks.slice(start, start + n);
+    const valid = () => !!to && (to !== "new" || !!descLine(nt.value));
+    const sec = (title, ...nodes) => { const d = el("div", "mv-sec"); d.append(el("p", "mv-h", title), ...nodes); return d; };
+    const field = (label, ctl) => { const l = el("label", "mv-field"); l.append(el("span", "", label), ctl); return l; };
+    // Что переносим: этот абзац и следующие за ним (до конца раздела)
+    const num = el("span", "mv-n");
+    const minus = btn("mv-step", "−", () => { if (n > 1) { n--; sync(); } });
+    const plus = btn("mv-step", "+", () => { if (n < max) { n++; sync(); } });
+    minus.setAttribute("aria-label", "Меньше абзацев"); plus.setAttribute("aria-label", "Больше абзацев");
+    const toEnd = btn("", "До конца раздела", () => { n = max; sync(); });
+    const count = el("div", "mv-count"); count.append(el("span", "", "Абзацев:"), minus, num, plus, toEnd);
+    const prev = el("p", "mv-prev");
+    // Куда: главы книги по порядку — название и краткое описание; последней строкой — новый раздел
+    const list = el("div", "mv-list"); list.setAttribute("role", "radiogroup"); list.setAttribute("aria-label", "Куда перенести");
+    const opt = (id, title, desc) => {
+      const o = btn("mv-opt", null, () => { to = id; place = "end"; sync(); if (id === "new") try { nt.focus(); } catch (e) { } });
+      o.setAttribute("role", "radio"); o.dataset.to = id;
+      const tx = el("span", "mv-tx"); tx.append(el("span", "mv-t", title), el("span", "mv-d", desc));
+      o.append(el("span", "mv-dot"), tx); list.append(o);
+    };
+    secs.forEach(s => opt(s.id, s.title || "Без названия", secDesc(s)));
+    opt("new", "Новый раздел", "Создать в книге раздел из этих абзацев");
+    // Новый раздел: название (обязательно) и после какой главы он встанет
+    const nt = el("input"); nt.type = "text"; nt.maxLength = 120; nt.required = true; nt.placeholder = "Название раздела";
+    nt.addEventListener("input", () => { if (ok) ok.disabled = !valid(); });
+    nt.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); if (ok && valid()) ok.click(); } });
+    const after = el("select");
+    secs.forEach(s => { const o = el("option", "", s.title || "Без названия"); o.value = s.id; after.append(o); });
+    if (secs.length) after.value = secs[secs.length - 1].id;
+    const afterBox = field("Поставить после", after); afterBox.hidden = !secs.length;
+    const newBox = el("div", "mv-new"); newBox.append(field("Название нового раздела", nt), afterBox);
+    // Место в выбранной главе: в конец, в начало или после любого её абзаца (кроме тех, что переносятся)
+    const where = el("select"); where.setAttribute("aria-label", "Место в разделе");
+    where.addEventListener("change", () => { place = where.value; });
+    const whereBox = sec("Место в разделе", where);
+    const sync = () => {
+      num.textContent = String(n);
+      minus.disabled = n <= 1; plus.disabled = n >= max; toEnd.disabled = n >= max;
+      const ms = moving();
+      prev.textContent = ms.length === 1 ? blockLabel(ms[0], 60) : blockLabel(ms[0], 30) + " … " + blockLabel(ms[ms.length - 1], 30);
+      list.querySelectorAll(".mv-opt").forEach(o => o.setAttribute("aria-checked", String(o.dataset.to === to)));
+      newBox.hidden = to !== "new";
+      const ts = to && to !== "new" ? secs.find(s => s.id === to) : null;
+      whereBox.hidden = !ts;
+      if (ts) {
+        const skip = new Set(ms.map(b => b.id)), rest = ts.blocks.filter(b => !skip.has(b.id));
+        const add = (v, t) => { const o = el("option", "", t); o.value = v; where.append(o); };
+        where.textContent = "";
+        add("end", "В конец раздела");
+        if (rest.length) { add("start", "В начало раздела"); rest.forEach(b => add("after:" + b.id, afterLabel(b))); }
+        if (![...where.options].some(o => o.value === place)) place = "end";
+        where.value = place;
+      }
+      if (ok) ok.disabled = !valid();
+    };
+    sync();
+    openModal("Перенести в книгу", frag(sec("Что переносим", count, prev), sec("Куда", list), newBox, whereBox), [
+      { label: "Перенести", primary: true, fn: () => { if (!valid()) return false; moveToBook(bid, n, to, place, descLine(nt.value), after.value); } },
+      { label: "Отмена" }
+    ]);
+    modal.querySelector(".mbox").classList.add("mv-box");
+    ok = modal.querySelector(".mact .primary"); sync();
+    // фокус — на выбранной главе (или первой строке списка), а не на поле: на телефоне не выскакивает клавиатура
+    const cur = list.querySelector('[aria-checked="true"]') || list.querySelector(".mv-opt");
+    if (cur) { try { cur.focus({ preventScroll: true }); } catch (e) { } cur.scrollIntoView({ block: "nearest" }); }
+  }
+  // Перенести n блоков, начиная с bid, в раздел книги to (id или "new") — одним шагом «Отменить»
+  function moveToBook(bid, n, to, place, title, afterSid) {
+    const f = findBlock(bid), book = doc.parts.find(p => p.id === "book");
+    if (!f || !book) return;
+    const ms = f.s.blocks.slice(f.i, f.i + n), ids = new Set(ms.map(b => b.id));
+    let ts = to === "new" ? null : book.sections.find(s => s.id === to);
+    if (to !== "new" && !ts) return;
+    const hold = holdPlace(ids), before = ts === f.s ? ts.blocks.map(b => b.id).join() : null;
+    pushUndo();
+    f.s.blocks.splice(f.i, ms.length);
+    if (ts) {
+      let at = place === "start" ? 0 : ts.blocks.length;
+      if (place.startsWith("after:")) { const j = ts.blocks.findIndex(b => b.id === place.slice(6)); if (j >= 0) at = j + 1; }
+      ts.blocks.splice(at, 0, ...ms);
+      if (before !== null && ts.blocks.map(b => b.id).join() === before) { undoStack.pop(); renderToolbarState(); toast("Абзацы и так стоят на этом месте"); return; }
+    } else {
+      // новый раздел — как «+ Добавить раздел»: свой id, без key (он не из файлов Claude, и новая версия текста его не тронет)
+      ts = { id: newId("s"), title: title || "Новый раздел", blocks: ms };
+      const j = book.sections.findIndex(s => s.id === afterSid);
+      book.sections.splice(j >= 0 ? j + 1 : book.sections.length, 0, ts);
+    }
+    // закладки на перенесённых абзацах: id абзацев те же, раздел и вкладка — новые
+    for (const k of doc.bm || []) if (ids.has(k.bid)) { const g = findBlock(k.bid); if (g) Object.assign(k, refOf(g)); }
+    mvLast = ts.id;
+    touch(); renderTabs(); renderView(true); hold();
+    toast("Перенесено в «" + short(ts.title || "Без названия", 40) + "»");
+  }
+  // Место чтения при переносе: первый видимый абзац остаётся на той же высоте экрана; если он уезжает сам,
+  // на его высоту встаёт следующий оставшийся абзац (в самом конце вкладки — предыдущий)
+  function holdPlace(ids) {
+    const rows = [...document.querySelectorAll("#view .row")], row = readingRow();
+    if (!row) return () => { };
+    const i0 = rows.indexOf(row);
+    let i = i0, y = row.getBoundingClientRect().top;
+    while (i < rows.length && ids.has(rows[i].dataset.bid)) i++;
+    if (i >= rows.length) { i = i0; while (i >= 0 && ids.has(rows[i].dataset.bid)) i--; if (i >= 0) y = rows[i].getBoundingClientRect().top; }
+    const keep = i >= 0 ? rows[i].dataset.bid : null;
+    return () => {
+      const node = keep && document.querySelector(`#view .row[data-bid="${keep}"]`);
+      if (node) { posHold = 0; window.scrollTo(0, Math.max(0, window.scrollY + node.getBoundingClientRect().top - y)); }
+      savePos();
+    };
+  }
+
+  // ---------- Карта (задача 16): книга блок-схемой на большой канве ----------
+  // Ствол — главная линия книги. Поле поделено по горизонтали на полосы эпох: что лежит в полосе (главы, ветви, блоки
+  // концепции, серые подписи), то и в этой эпохе. Справа от поля — полка «Без эпохи»: абзацы концепции, ещё не
+  // разложенные по эпохам, — по разделам. На поле всё лежит там, куда положили (doc.map.pos, «ключ:id» → [x, y], клетка
+  // GRID), и уезжает с «Экспортом». Порядок в книге — по высоте: что выше, то раньше (в одном ряду — левее); глава — в
+  // полосе своей эпохи, абзац — в главе, к которой от него идёт линия. Перестановки на карте — черновик doc.map.draft
+  // (ch — порядок глав, bl — абзацы глав, out — отвязанные абзацы, q — «под вопросом» у абзацев концепции) до «Сохранить
+  // в книгу»; «Сбросить» возвращает места и порядок, какими они были до первой перестановки (doc.map.base). Абзац «под
+  // вопросом» (b.q — подпись, может быть пустой) привязан пунктиром с подписью, в книге выделен рамкой. Поменялся
+  // порядок в самой книге («Переместить вверх», новая глава от Claude) — блоки на карте сами встают по нему (mapSync).
+  // Масштаб — как в Miro: раскладка одна, карта плавно приближается и отдаляется. Концепция — в правой панели (раздел →
+  // абзацы → текст), оттуда абзац тянут на канву. Выделение группой: рамка по пустому месту или Shift+щелчок; правая
+  // кнопка мыши двигает канву. Место, масштаб карты и ширина панели — свои на каждом устройстве (prefs.mapView, mapPanelW).
+  // На блоке — «Кратко», точки групп пометок, комментарии и число знаков.
+  const ML = { gap: 64, epW: 224, epH: 48, chW: 224, chH: 80, blW: 208, blH: 64, blGap: 16, ind: 16, rowGap: 32, brW: 176, brH: 48, band: 48 };   // band — от верха полосы до узла эпохи (там название эпохи)
+  const GRID = 16;             // невидимая сетка: отпущенный блок встаёт в ближайшую клетку
+  const LOD_K = 0.42;          // мельче этого масштаба текст на блоках — серые полоски (места те же, как в Miro)
+  const FREE_SEC = "С карты";  // раздел концепции для новых блоков и отвязанных абзацев
+  let mapSel = null, mapLay = null, mapEls = {}, mpCaret = null, mapTimer = null, mapSaveT = null, mapDrag = null;
+  let mapMulti = new Set();    // выделено группой: «вид:id» (bl, ch, txt, br)
+  let mapNav = null;           // панель без выделения: null — обзор, { sec } — абзацы раздела концепции
+
+  function bookSecs() { const b = doc.parts.find(p => p.id === "book"); return b ? b.sections : []; }
+  const snapV = v => Math.round(v / GRID) * GRID;
+  const snapUp = v => Math.ceil(v / GRID) * GRID;
+  function mpos(k, id) { const p = doc.map && doc.map.pos && doc.map.pos[k + ":" + id]; return p ? { x: p[0], y: p[1] } : null; }
+  function setPos(m, k, id, x, y) { m.pos[k + ":" + id] = [Math.round(x), Math.round(y)]; }
+  // что раньше: выше, в одном ряду — левее; без места — в конце
+  const cmpP = (p, q) => !p || !q ? (!p) - (!q) : p.y - q.y || p.x - q.x;
+
+  // ----- Книга, как она будет после «Сохранить в книгу»: книга + черновик -----
+  function mapStruct() {
+    const book = bookSecs(), d = (doc.map && doc.map.draft) || null, all = new Map();
+    for (const p of doc.parts) for (const s of p.sections) s.blocks.forEach((b, i) => all.set(b.id, { p, s, b, i }));
+    const home = new Map(), out = [];
+    if (d) {
+      for (const id of d.out || []) { const f = all.get(id); if (f && f.p.id === "book" && !home.has(id)) { home.set(id, null); out.push(f.b); } }
+      for (const s of book) for (const id of (d.bl && d.bl[s.id]) || []) if (all.has(id) && !home.has(id)) home.set(id, s.id);
+    }
+    // главы по порядку черновика; глава, которой в нём нет (новая), — после соседа сверху по книге
+    let order = book;
+    if (d && d.ch) {
+      const by = new Map(book.map(s => [s.id, s])), L = [...new Set(d.ch)].filter(id => by.has(id));
+      book.forEach((s, i) => { if (L.includes(s.id)) return; const j = i ? L.indexOf(book[i - 1].id) : -1; L.splice(j + 1, 0, s.id); });
+      order = L.map(id => by.get(id));
+    }
+    const chapters = order.map(s => {
+      let ids;
+      if (d && d.bl && d.bl[s.id]) {
+        ids = [...new Set(d.bl[s.id])].filter(id => home.get(id) === s.id);
+        // абзацы главы, которых нет в черновике (добавлены потом), — после соседа сверху по книге
+        s.blocks.forEach((b, j) => { if (home.has(b.id) || ids.includes(b.id)) return; const k = j ? ids.indexOf(s.blocks[j - 1].id) : -1; ids.splice(k >= 0 ? k + 1 : j ? ids.length : 0, 0, b.id); });
+      } else ids = s.blocks.filter(b => !home.has(b.id)).map(b => b.id);
+      return { s, blocks: ids.map(id => all.get(id).b) };
+    });
+    const where = new Map(); chapters.forEach(c => c.blocks.forEach(b => where.set(b.id, c.s.id)));
+    return { chapters, out, all, where };
+  }
+  // «под вопросом»: у абзаца книги — b.q, у абзаца концепции, привязанного в черновике, — draft.q
+  function qOf(b) {
+    const d = doc.map && doc.map.draft;
+    if (d && d.q && Object.prototype.hasOwnProperty.call(d.q, b.id)) return d.q[b.id];
+    return typeof b.q === "string" ? b.q : null;
+  }
+  function setQ(m, bid, cap) {
+    const f = findBlock(bid); if (!f) return;
+    const v = cap == null ? null : descLine(cap).slice(0, 200);
+    if (f.p.id === "book") { if (v == null) delete f.b.q; else f.b.q = v; if (m.draft && m.draft.q) delete m.draft.q[bid]; }
+    else if (v != null) { m.draft = m.draft || {}; (m.draft.q = m.draft.q || {})[bid] = v; }
+    else if (m.draft && m.draft.q) delete m.draft.q[bid];
+  }
+  // Сколько перестановок в черновике: абзацы, приехавшие в главу, переставленные внутри главы, главы, отвязанные абзацы
+  function lisLen(a) { const t = []; for (const v of a) { let lo = 0, hi = t.length; while (lo < hi) { const md = (lo + hi) >> 1; if (t[md] < v) lo = md + 1; else hi = md; } t[lo] = v; } return t.length; }
+  function draftCount(st) {
+    const bi = new Map(bookSecs().map((s, i) => [s.id, i]));
+    let n = st.chapters.length - lisLen(st.chapters.map(c => bi.get(c.s.id)));
+    for (const c of st.chapters) {
+      const orig = new Map(c.s.blocks.map((b, i) => [b.id, i])), stay = c.blocks.filter(b => orig.has(b.id)).map(b => orig.get(b.id));
+      n += c.blocks.length - lisLen(stay);
+    }
+    return n + st.out.length;
+  }
+
+  // ----- Эпохи: полоса эпохи — от её узла на стволе до следующей -----
+  function bandTop(e) { return e.y - ML.band; }
+  function epochsSorted() { const m = doc.map; return m && Array.isArray(m.epochs) ? m.epochs.filter(e => Number.isFinite(e.y)).sort((a, b) => a.y - b.y) : []; }
+  function bandOf(eps, y) { let k = 0; for (let j = 0; j < eps.length; j++) if (y >= bandTop(eps[j])) k = j; return k; }
+  // Эпохи по порядку и главы каждой из них (главы — в порядке книги с черновиком)
+  function epochsNow(st) {
+    st = st || mapStruct();
+    const m = doc.map, list = m && m.epochs && m.epochs.length ? m.epochs : [{ id: "e1", title: "Эпоха 1" }];
+    if (list.some(e => !Number.isFinite(e.y))) return epochsLegacy(list, st.chapters.map(c => c.s));
+    const eps = list.slice().sort((a, b) => a.y - b.y), out = eps.map(e => ({ e, secs: [] }));
+    for (const c of st.chapters) { const p = mpos("c", c.s.id); out[p ? bandOf(eps, p.y) : 0].secs.push(c.s); }
+    return out;
+  }
+  // Данные до 16б: эпоха — главы подряд с главы first (так их и раскладываем в первый раз)
+  function epochsLegacy(list, secs) {
+    const idx = new Map(secs.map((s, i) => [s.id, i]));
+    let full = list.filter(e => idx.has(e.first)).sort((a, b) => idx.get(a.first) - idx.get(b.first));
+    if (!full.length) full = [list[0]];
+    const out = full.map(e => ({ e, secs: [] }));
+    list.forEach((e, i) => {
+      if (out.some(x => x.e === e)) return;
+      let at = 0;
+      for (let j = i - 1; j >= 0; j--) { const q = out.findIndex(x => x.e === list[j]); if (q >= 0) { at = q + 1; break; } }
+      out.splice(at, 0, { e, secs: [] });
+    });
+    const starts = full.map(e => idx.has(e.first) ? idx.get(e.first) : 0);
+    secs.forEach((s, i) => { let k = 0; for (let j = 0; j < full.length; j++) if (starts[j] <= i) k = j; out.find(x => x.e === full[k]).secs.push(s); });
+    return out;
+  }
+
+  // ----- Места на поле -----
+  function colBottom(c) { const p = mpos("c", c.s.id); let b = p ? p.y + ML.chH : 0; for (const x of c.blocks) { const q = mpos("b", x.id); if (q) b = Math.max(b, q.y + ML.blH); } return b; }
+  function textSize(t) {
+    const lines = String(t || "").split("\n"), long = Math.max(4, ...lines.map(l => l.length));
+    const w = Math.min(520, Math.max(64, long * 10.4 + 14)), wrap = lines.reduce((a, l) => a + Math.max(1, Math.ceil(l.length * 10.4 / 506)), 0);
+    return { w: Math.round(w), h: Math.round(wrap * 24 + 8) };
+  }
+  function keySize(m, k) {
+    if (k.startsWith("b:")) return { w: ML.blW, h: ML.blH };
+    if (k.startsWith("r:")) return { w: ML.brW, h: ML.brH };
+    if (k.startsWith("t:")) { const t = m.texts.find(x => "t:" + x.id === k); return textSize(t && t.text); }
+    return { w: ML.chW, h: ML.chH };
+  }
+  function shiftChapter(m, c, dx, dy) {
+    const p = m.pos["c:" + c.s.id]; if (p) { p[0] += dx; p[1] += dy; }
+    for (const b of c.blocks) { const q = m.pos["b:" + b.id]; if (q) { q[0] += dx; q[1] += dy; } }
+  }
+  // Сдвинуть вниз всё, что начинается на высоте y0 и ниже (главы — вместе с абзацами), и эпохи там же.
+  // chs — какие главы двигать (по умолчанию — те, чей узел на y0 или ниже)
+  function shiftFrom(m, st, y0, d, chs) {
+    const att = new Set();
+    for (const c of st.chapters) { c.blocks.forEach(b => att.add(b.id)); const p = mpos("c", c.s.id); if (p && (chs ? chs.has(c.s.id) : p.y >= y0)) shiftChapter(m, c, 0, d); }
+    for (const [k, v] of Object.entries(m.pos)) if (!k.startsWith("c:") && !(k.startsWith("b:") && att.has(k.slice(2))) && v[1] >= y0) v[1] += d;
+    for (const e of m.epochs) if (Number.isFinite(e.y) && e.y >= y0) e.y += d;
+  }
+  // Раскладка по умолчанию: эпохи сверху вниз, главы парами слева и справа от ствола, абзацы колонкой под главой.
+  // Подписи остаются где были; блоки концепции — на полке
+  function autoPlace(m, st) {
+    const groups = epochsNow(st), pos = {}, eps = groups.map(g => g.e);
+    for (const [k, v] of Object.entries(m.pos || {})) if (k.startsWith("t:")) pos[k] = v;
+    let y = 0;
+    for (const { e, secs } of groups) {
+      e.y = y; delete e.first;
+      let bx = ML.epW / 2 + 48;
+      for (const br of m.branches.filter(b => b.epoch === e.id || (e === eps[0] && !eps.some(q => q.id === b.epoch)))) { pos["r:" + br.id] = [bx, y]; bx += ML.brW + 16; }
+      y += ML.epH + 32;
+      for (let j = 0; j < secs.length; j += 2) {
+        let h = ML.chH;
+        [secs[j], secs[j + 1]].forEach((s, side) => {
+          if (!s) return;
+          const x = side ? ML.gap : -(ML.gap + ML.chW), c = st.chapters.find(q => q.s === s);
+          pos["c:" + s.id] = [x, y];
+          let by = y + ML.chH + 16;
+          for (const b of c ? c.blocks : []) { pos["b:" + b.id] = [x + ML.ind, by]; by += ML.blH + ML.blGap; }
+          h = Math.max(h, by - ML.blGap - y);
+        });
+        y += h + ML.rowGap;
+      }
+      y += 48;
+    }
+    m.pos = pos;
+  }
+  // Новые главы, абзацы, ветви — на место по соседству (порядок потом поправит permute)
+  function placeNew(m, st) {
+    let ch = false;
+    const eps = epochsSorted();
+    st.chapters.forEach((c, i) => {
+      if (mpos("c", c.s.id)) return;
+      let prev = null; for (let j = i - 1; j >= 0 && !prev; j--) if (mpos("c", st.chapters[j].s.id)) prev = st.chapters[j];
+      if (prev) { const p = mpos("c", prev.s.id); setPos(m, "c", c.s.id, p.x, snapUp(colBottom(prev) + ML.rowGap)); }
+      else setPos(m, "c", c.s.id, -(ML.gap + ML.chW), (eps[0] ? eps[0].y : 0) + ML.epH + 32);
+      ch = true;
+    });
+    for (const c of st.chapters) for (const b of c.blocks) {
+      if (mpos("b", b.id)) continue;
+      const p = mpos("c", c.s.id), last = c.blocks.map(q => mpos("b", q.id)).filter(Boolean).sort(cmpP).pop();
+      setPos(m, "b", b.id, last ? last.x : p.x + ML.ind, last ? last.y + ML.blH + ML.blGap : p.y + ML.chH + 16);
+      ch = true;
+    }
+    for (const br of m.branches) {
+      if (mpos("r", br.id)) continue;
+      const e = eps.find(q => q.id === br.epoch) || eps[0]; if (!e) continue;
+      let x = ML.epW / 2 + 48;
+      while (m.branches.some(o => { const q = o !== br && mpos("r", o.id); return q && q.y === e.y && q.x === x; })) x += ML.brW + 16;
+      setPos(m, "r", br.id, x, e.y); ch = true;
+    }
+    for (const t of m.texts) if (!mpos("t", t.id)) { setPos(m, "t", t.id, ML.gap + ML.chW + 96, eps[0] ? eps[0].y : 0); ch = true; }
+    return ch;
+  }
+  // Порядок поменялся в самой книге — главы и абзацы меняются местами так, чтобы порядок по высоте был как в книге
+  function permute(m, st) {
+    let ch = false;
+    const cs = st.chapters.filter(c => mpos("c", c.s.id)), slots = cs.map(c => mpos("c", c.s.id)).sort(cmpP);
+    const moves = cs.map((c, i) => { const p = mpos("c", c.s.id); return [c, slots[i].x - p.x, slots[i].y - p.y]; }).filter(x => x[1] || x[2]);
+    for (const [c, dx, dy] of moves) { shiftChapter(m, c, dx, dy); ch = true; }
+    for (const c of st.chapters) {
+      const ps = c.blocks.map(b => mpos("b", b.id)); if (ps.some(p => !p)) continue;
+      const sl = ps.slice().sort(cmpP);
+      c.blocks.forEach((b, i) => { if (ps[i].x !== sl[i].x || ps[i].y !== sl[i].y) { setPos(m, "b", b.id, sl[i].x, sl[i].y); ch = true; } });
+    }
+    return ch;
+  }
+  // Колонка главы наехала на узел главы ниже — всё ниже опускается целым рядом (порядок по высоте не меняется)
+  function pushDown(m, st) {
+    let ch = false;
+    for (let guard = 0; guard < 80; guard++) {
+      const us = st.chapters.map((c, i) => {
+        const p = mpos("c", c.s.id); if (!p) return null;
+        const r = [[p.x, p.y, ML.chW, ML.chH]];
+        for (const b of c.blocks) { const q = mpos("b", b.id); if (q) r.push([q.x, q.y, ML.blW, ML.blH]); }
+        return { i, p, r };
+      }).filter(Boolean).sort((a, b) => a.p.y - b.p.y || a.i - b.i);
+      let hit = null;
+      for (let j = 1; j < us.length && !hit; j++) {
+        const { p } = us[j];
+        for (let i = 0; i < j && !hit; i++) {
+          let need = 0;
+          for (const [x, y, w, h] of us[i].r) if (x < p.x + ML.chW && x + w > p.x && y < p.y + ML.chH && y + h + ML.blGap > p.y) need = Math.max(need, y + h + ML.rowGap - p.y);
+          if (need > 0) hit = { y: p.y, d: snapUp(need) };
+        }
+      }
+      if (!hit) break;
+      shiftFrom(m, st, hit.y, hit.d); ch = true;
+    }
+    return ch;
+  }
+  // Содержимое эпохи вылезло за её полосу — полосы ниже опускаются вместе со всем, что в них
+  function bandFix(m, st) {
+    let ch = false;
+    const att = new Set(); st.chapters.forEach(c => c.blocks.forEach(b => att.add(b.id)));
+    for (let guard = 0; guard < 40; guard++) {
+      const eps = epochsSorted(); let hit = null;
+      for (let i = 0; i + 1 < eps.length && !hit; i++) {
+        const top = bandTop(eps[i + 1]); let bot = eps[i].y + ML.epH;
+        for (const c of st.chapters) { const p = mpos("c", c.s.id); if (p && p.y < top) bot = Math.max(bot, colBottom(c)); }
+        for (const [k, v] of Object.entries(m.pos)) if (!k.startsWith("c:") && !(k.startsWith("b:") && att.has(k.slice(2))) && v[1] < top) bot = Math.max(bot, v[1] + keySize(m, k).h);
+        if (bot + ML.rowGap > top) hit = { y: top, d: snapUp(bot + ML.rowGap - top) };
+      }
+      if (!hit) break;
+      shiftFrom(m, st, hit.y, hit.d); ch = true;
+    }
+    return ch;
+  }
+  // Лишние места (удалённые главы, абзацы, подписи) — прочь; ветвь — в эпохе своей полосы; черновик — без пустых записей
+  function gcPos(m, st) {
+    let ch = false;
+    const keep = new Set();
+    st.chapters.forEach(c => { keep.add("c:" + c.s.id); c.blocks.forEach(b => keep.add("b:" + b.id)); });
+    for (const p of doc.parts) if (p.id !== "book") for (const s of p.sections) s.blocks.forEach(b => keep.add("b:" + b.id));
+    st.out.forEach(b => keep.add("b:" + b.id));
+    m.branches.forEach(b => keep.add("r:" + b.id)); m.texts.forEach(t => keep.add("t:" + t.id));
+    for (const k of Object.keys(m.pos)) if (!keep.has(k)) { delete m.pos[k]; ch = true; }
+    const eps = epochsSorted();
+    for (const br of m.branches) { const p = mpos("r", br.id); if (p && eps.length) { const id = eps[bandOf(eps, p.y)].id; if (br.epoch !== id) { br.epoch = id; ch = true; } } }
+    return draftClean(m) || ch;
+  }
+  // Черновик из мест на поле: порядок глав и абзацев — по высоте
+  function draftFromPos(m) {
+    const st = mapStruct(), d = m.draft || {};
+    d.ch = st.chapters.slice().sort((a, b) => cmpP(mpos("c", a.s.id), mpos("c", b.s.id))).map(c => c.s.id);
+    d.bl = {};
+    for (const c of st.chapters) d.bl[c.s.id] = c.blocks.slice().sort((a, b) => cmpP(mpos("b", a.id), mpos("b", b.id))).map(b => b.id);
+    d.out = st.out.map(b => b.id);
+    m.draft = d;
+  }
+  // В черновике остаётся только то, что отличается от книги; ничего — черновика нет
+  function draftClean(m) {
+    const d = m.draft;
+    if (!d) { if (m.base) { m.base = null; return true; } return false; }
+    const was = JSON.stringify(d), st = mapStruct(), nd = {};
+    const ord = st.chapters.map(c => c.s.id);
+    if (ord.join() !== bookSecs().map(s => s.id).join()) nd.ch = ord;
+    for (const c of st.chapters) { const ids = c.blocks.map(b => b.id); if (ids.join() !== c.s.blocks.map(b => b.id).join()) (nd.bl = nd.bl || {})[c.s.id] = ids; }
+    if (st.out.length) nd.out = st.out.map(b => b.id);
+    for (const [id, v] of Object.entries(d.q || {})) { const f = st.all.get(id); if (f && f.p.id !== "book" && st.where.has(id) && typeof v === "string") (nd.q = nd.q || {})[id] = v; }
+    if (!nd.ch && !nd.bl && !nd.out) { m.draft = null; m.base = null; return true; }
+    m.draft = nd;
+    return JSON.stringify(nd) !== was;
+  }
+  // Карта в данных книги: при первом показе — раскладка по умолчанию; дальше — только поправки (новое, порядок, полосы)
+  function mapSync() {
+    let ch = false;
+    if (!doc.map || !Array.isArray(doc.map.epochs)) { doc.map = { epochs: [], branches: [] }; ch = true; }
+    const m = doc.map;
+    if (!m.epochs.length) { m.epochs.push({ id: "e1", title: "Эпоха 1" }); ch = true; }
+    if (!Array.isArray(m.branches)) m.branches = [];
+    if (!Array.isArray(m.texts)) m.texts = [];
+    const st = mapStruct();
+    if (!m.pos || typeof m.pos !== "object" || m.epochs.some(e => !Number.isFinite(e.y)) || (st.chapters.length && !Object.keys(m.pos).some(k => k.startsWith("c:")))) { autoPlace(m, st); ch = true; }
+    if (placeNew(m, st)) ch = true;
+    if (permute(m, st)) ch = true;
+    if (pushDown(m, st)) ch = true;
+    if (bandFix(m, st)) ch = true;
+    if (gcPos(m, st)) ch = true;
+    if (ch && posReady) scheduleSave();
+    return mapStruct();
+  }
+  function mapEnsure() { mapSync(); return doc.map; }
+  function baseSnap(m) {
+    const q = {};
+    for (const s of bookSecs()) for (const b of s.blocks) if (typeof b.q === "string") q[b.id] = b.q;
+    return { pos: JSON.parse(JSON.stringify(m.pos || {})), q, ep: Object.fromEntries(m.epochs.map(e => [e.id, e.y])) };
+  }
+  // Правка карты — один шаг «Отменить»; порядок книги в черновике — по высоте на поле
+  function mapEdit(fn, msg) {
+    pushUndo();
+    const m = mapEnsure(), had = !!m.draft, base = had ? null : baseSnap(m);
+    fn(m, mapStruct());
+    draftFromPos(m); draftClean(m);
+    if (m.draft && !had) m.base = base;
+    touch(); renderView(true); if (msg) toast(msg);
+  }
+  // Кто к какой главе привязан сейчас (с черновиком) — чтобы переписать и записать обратно
+  function memb(st) { const L = {}; st.chapters.forEach(c => { L[c.s.id] = c.blocks.map(b => b.id); }); return { L, out: st.out.map(b => b.id) }; }
+  function membWrite(m, M) { m.draft = m.draft || {}; m.draft.bl = M.L; m.draft.out = M.out; }
+  function membDrop(M, bid) { for (const k in M.L) M.L[k] = M.L[k].filter(x => x !== bid); M.out = M.out.filter(x => x !== bid); }
+  // Отвязать: абзац книги уйдёт в концепцию (раздел «С карты») при сохранении; абзац концепции — просто без линии
+  function detachIn(m, st, bid) {
+    const M = memb(st); membDrop(M, bid);
+    const f = findBlock(bid); if (f && f.p.id === "book") M.out.push(bid);
+    membWrite(m, M); setQ(m, bid, null);
+  }
+  // Абзац уходит из колонки своей главы (брошен на другое место или на полку) — абзацы под ним в той же колонке подтягиваются
+  function closeGap(m, st, bid) {
+    const sid = st.where.get(bid), c = sid && st.chapters.find(q => q.s.id === sid), o = mpos("b", bid); if (!c || !o) return;
+    for (const x of c.blocks) { if (x.id === bid) continue; const q = m.pos["b:" + x.id]; if (q && q[0] === o.x && q[1] > o.y) q[1] -= ML.blH + ML.blGap; }
+  }
+  // Поставить абзац сразу под главой (первым) или под абзацем t; абзацы этой главы ниже — на шаг вниз
+  function insertAt(m, st, bid, t) {
+    const c = st.chapters.find(q => q.s.id === t.sid); if (!c) return;
+    closeGap(m, st, bid);
+    const tp = t.k === "ch" ? mpos("c", t.sid) : mpos("b", t.id); if (!tp) return;
+    const nx = t.k === "ch" ? tp.x + ML.ind : tp.x, ny = t.k === "ch" ? tp.y + ML.chH + 16 : tp.y + ML.blH + ML.blGap;
+    for (const x of c.blocks) { if (x.id === bid) continue; const q = m.pos["b:" + x.id]; if (q && (t.k === "ch" ? q[1] >= tp.y : q[1] > tp.y)) q[1] += ML.blH + ML.blGap; }
+    setPos(m, "b", bid, nx, ny);
+    const M = memb(st); membDrop(M, bid); (M.L[t.sid] = M.L[t.sid] || []).push(bid); membWrite(m, M);
+  }
+  function freeSec(create) {
+    let conc = doc.parts.find(p => p.id === "concept");
+    let s = conc && conc.sections.find(x => !x.key && x.title === FREE_SEC);
+    if (!s && create) {
+      if (!conc) { conc = { id: "concept", title: "Концепция", head: null, sections: [] }; doc.parts.splice(1, 0, conc); }
+      s = { id: newId("s"), title: FREE_SEC, blocks: [] }; conc.sections.push(s);
+    }
+    return s || null;
+  }
+  // «Сохранить в книгу»: порядок глав и абзацев, абзацы из концепции — в главы, отвязанные — в концепцию. Один шаг «Отменить»
+  function mapSaveDraft() {
+    const m = doc.map, book = doc.parts.find(p => p.id === "book");
+    if (!m || !m.draft || !book) return;
+    const st = mapStruct(), n = draftCount(st), d = m.draft;
+    pushUndo();
+    const inBook = new Set(); st.chapters.forEach(c => c.blocks.forEach(b => inBook.add(b.id)));
+    const outIds = new Set(st.out.map(b => b.id));
+    for (const p of doc.parts) if (p.id !== "book") for (const s of p.sections) s.blocks = s.blocks.filter(b => !inBook.has(b.id));
+    for (const c of st.chapters) c.s.blocks = c.blocks.slice();
+    book.sections = st.chapters.map(c => c.s);
+    if (outIds.size) { const fs = freeSec(true); for (const b of st.out) { delete b.q; fs.blocks.push(b); } }
+    for (const [id, cap] of Object.entries(d.q || {})) { const f = st.all.get(id); if (f && inBook.has(id)) f.b.q = cap; }
+    for (const k of doc.bm || []) { const g = findBlock(k.bid); if (g) Object.assign(k, refOf(g)); }
+    m.draft = null; m.base = null;
+    touch(); renderTabs(); renderView(true);
+    toast(n ? "Сохранено в книгу: перестановок " + n : "Сохранено в книгу");
+  }
+  // «Сбросить»: места, порядок и «под вопросом» — как до первой перестановки
+  function mapResetDraft() {
+    mapEdit(m => {
+      const b = m.base;
+      if (b) {
+        const pos = JSON.parse(JSON.stringify(b.pos || {}));
+        for (const [k, v] of Object.entries(m.pos)) if ((k.startsWith("t:") || k.startsWith("r:")) && !(k in pos)) pos[k] = v;
+        m.pos = pos;
+        for (const e of m.epochs) if (b.ep && Number.isFinite(b.ep[e.id])) e.y = b.ep[e.id];
+        for (const s of bookSecs()) for (const x of s.blocks) { if (b.q && typeof b.q[x.id] === "string") x.q = b.q[x.id]; else delete x.q; }
+      }
+      m.draft = null; m.base = null;
+    }, "Перестановки сброшены");
+  }
+
+  // ----- Эпохи и ветви -----
+  function contentBottom(m, st) {
+    let b = 0;
+    for (const c of st.chapters) if (mpos("c", c.s.id)) b = Math.max(b, colBottom(c));
+    for (const [k, v] of Object.entries(m.pos)) if (!k.startsWith("c:")) b = Math.max(b, v[1] + keySize(m, k).h);
+    for (const e of m.epochs) if (Number.isFinite(e.y)) b = Math.max(b, e.y + ML.epH);
+    return b;
+  }
+  // У главы — «Начать здесь новую эпоху»: граница эпохи встаёт над этой главой; главы раньше неё остаются выше
+  function epochSplit(sid) {
+    mapEdit((m, st) => {
+      const i = st.chapters.findIndex(c => c.s.id === sid), p = mpos("c", sid); if (i < 0 || !p) return;
+      const eps = epochsSorted(), band = bandOf(eps, p.y), cur = eps[band];
+      let bot = cur ? cur.y + ML.epH : p.y;
+      for (const c of st.chapters.slice(0, i)) { const q = mpos("c", c.s.id); if (q && bandOf(eps, q.y) === band) bot = Math.max(bot, colBottom(c)); }
+      const ey = snapUp(Math.max(bot + ML.rowGap + ML.band, p.y - ML.epH - 32));
+      const d = snapUp(Math.max(0, ey + ML.epH + 32 - p.y));
+      if (d) shiftFrom(m, st, p.y, d, new Set(st.chapters.slice(i).map(c => c.s.id)));
+      const e = { id: newId("e"), title: "Новая эпоха", y: ey }; m.epochs.push(e); mapSel = { k: "ep", id: e.id };
+    }, "Новая эпоха начинается с этой главы");
+  }
+  function epochAdd(afterId) {
+    mapEdit((m, st) => {
+      const eps = epochsSorted(), i = afterId ? eps.findIndex(e => e.id === afterId) : eps.length - 1, nx = eps[i + 1];
+      let y;
+      if (nx) { y = nx.y; shiftFrom(m, st, bandTop(nx), 160); }
+      else y = snapUp(contentBottom(m, st) + ML.rowGap + ML.band);
+      const e = { id: newId("e"), title: "Новая эпоха", y }; m.epochs.push(e); mapSel = { k: "ep", id: e.id };
+    }, "Эпоха добавлена");
+  }
+  function epochDelete(id) {
+    mapEdit(m => {
+      if (m.epochs.length <= 1) return;
+      const eps = epochsSorted(), i = eps.findIndex(e => e.id === id), to = eps[i - 1] || eps[i + 1];
+      m.epochs = m.epochs.filter(e => e.id !== id);
+      for (const b of m.branches) if (b.epoch === id && to) b.epoch = to.id;
+      mapSel = to ? { k: "ep", id: to.id } : null;
+    }, "Эпоха удалена; что в ней было — в эпохе выше");
+  }
+  function branchAdd(eid) {
+    mapEdit(m => { const b = { id: newId("v"), title: "Ветвь: новая", epoch: eid }; m.branches.push(b); mapSel = { k: "br", id: b.id }; }, "Ветвь добавлена");
+  }
+  function branchDelete(id) { mapEdit(m => { const b = m.branches.find(x => x.id === id); m.branches = m.branches.filter(x => x.id !== id); mapSel = b ? { k: "ep", id: b.epoch } : null; }, "Ветвь удалена"); }
+  // Середина экрана на поле (для «+ Блок», «+ Текст»)
+  function mapCenter() {
+    const c = mapEls.can; if (!c || !MV) return { x: 0, y: 0 };
+    return { x: (c.clientWidth / 2 - MV.x) / MV.k, y: (c.clientHeight * 0.45 - MV.y) / MV.k };
+  }
+  function mapAddText(at) {
+    const p = at || mapCenter();
+    let id = null;
+    mapEdit(m => { const t = { id: newId("t"), text: "" }; m.texts.push(t); setPos(m, "t", t.id, snapV(p.x), snapV(p.y)); mapSel = { k: "txt", id: t.id }; id = t.id; });
+    focusPanel("textarea");
+    if (id) mapReveal(id);
+  }
+  // «+ Блок»: новый пустой абзац концепции (раздел «С карты») посреди экрана
+  function mapAddBlock() {
+    const p = mapCenter();
+    let id = null;
+    mapEdit(m => {
+      const s = freeSec(true), b = { id: newId("b"), t: "p", html: "", cm: [] };
+      s.blocks.push(b); id = b.id;
+      setPos(m, "b", b.id, snapV(p.x - ML.blW / 2), snapV(p.y - ML.blH / 2));
+      mapSel = { k: "bl", id: b.id };
+    });
+    if (id) mapReveal(id);
+    focusPanel(".bt");
+  }
+  // «+ Глава»: новая пустая глава книги. at — точка поля ({x, y}) или функция (m, st) → точка; в книге глава встаёт
+  // перед первой главой, которая на карте ниже этой точки (порядок — по высоте)
+  function mapAddChapter(at) {
+    const i = el("input"); i.type = "text"; i.maxLength = 120; i.placeholder = "Название главы"; i.setAttribute("aria-label", "Название главы");
+    const go = () => {
+      const title = i.value.replace(/\s+/g, " ").trim() || "Новая глава";
+      let id = null;
+      mapEdit((m, st) => {
+        const book = doc.parts.find(p => p.id === "book"); if (!book) return;
+        const pos = typeof at === "function" ? at(m, st) : at, x = snapV(pos.x), y = snapV(pos.y);
+        const s = { id: newId("s"), title, blocks: [] }; id = s.id;
+        const next = st.chapters.find(c => { const q = mpos("c", c.s.id); return q && (q.y > y || (q.y === y && q.x > x)); });
+        const j = next ? book.sections.indexOf(next.s) : -1;
+        book.sections.splice(j < 0 ? book.sections.length : j, 0, s);
+        setPos(m, "c", s.id, x, y);
+        mapSel = { k: "ch", id: s.id };
+      }, "Глава добавлена");
+      if (id) mapReveal(id);
+    };
+    i.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); go(); closeModal(); } });
+    openModal("Новая глава", i, [{ label: "Добавить", primary: true, fn: go }, { label: "Отмена" }]);
+    setTimeout(() => { try { i.focus(); } catch (e) { } }, 30);
+  }
+  // Конец эпохи: под самой нижней главой её полосы, слева от ствола
+  function epochEnd(eid) {
+    return (m, st) => {
+      const eps = epochsSorted(), e = eps.find(x => x.id === eid) || eps[eps.length - 1], k = eps.indexOf(e);
+      const top = bandTop(e), bot = eps[k + 1] ? bandTop(eps[k + 1]) : Infinity;
+      let y = e.y + ML.epH + 32;
+      for (const c of st.chapters) { const q = mpos("c", c.s.id); if (q && q.y >= top && q.y < bot) y = Math.max(y, colBottom(c) + ML.rowGap); }
+      return { x: -(ML.gap + ML.chW), y: snapUp(y) };
+    };
+  }
+  function focusPanel(sel) { setTimeout(() => { const x = mapEls.panel && mapEls.panel.querySelector(sel); if (x) try { x.focus({ preventScroll: true }); } catch (e) { } }, 30); }
+  // Свободное место в полосе эпохи — справа от того, что в ней уже лежит
+  function freeSpot(m, st, e) {
+    const eps = epochsSorted(), i = eps.indexOf(e), top = e.y, bottom = eps[i + 1] ? bandTop(eps[i + 1]) - ML.blH - 16 : top + 2000;
+    const boxes = [];
+    for (const c of st.chapters) { const p = mpos("c", c.s.id); if (!p) continue; boxes.push([p.x, p.y, ML.chW, ML.chH]); for (const b of c.blocks) { const q = mpos("b", b.id); if (q) boxes.push([q.x, q.y, ML.blW, ML.blH]); } }
+    for (const [k, v] of Object.entries(m.pos)) if (!k.startsWith("c:")) { const z = keySize(m, k); boxes.push([v[0], v[1], z.w, z.h]); }
+    boxes.push([-ML.epW / 2, e.y, ML.epW, ML.epH]);
+    let right = ML.gap + ML.chW;
+    for (const [x, y, w, h] of boxes) if (y < bottom + ML.blH && y + h > top) right = Math.max(right, x + w);
+    const x = snapUp(right + 48);
+    for (let y = snapV(top); y <= Math.max(top, bottom); y += ML.blH + ML.blGap) if (!boxes.some(([bx, by, bw, bh]) => bx < x + ML.blW && bx + bw > x && by < y + ML.blH && by + bh > y)) return { x, y };
+    return { x, y: snapV(top) };
+  }
+
+  // ----- Подписи и цифры блоков -----
+  function lenOf(b) { return blockText(b).length; }
+  function secLen(s) { return s.blocks.reduce((a, b) => a + lenOf(b), 0); }
+  function numFmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  // Подпись Claude к абзацу — строка «<!-- кратко: … -->» над абзацем в файле главы (в BOOK/CONCEPT — sum). Абзац
+  // находит свою подпись по тексту (без пометок), как и tools\tekst.py: так она держится и у старых данных, и у
+  // перенесённых абзацев. На телефоне BOOK нет — там sum0 из «Экспорта».
+  let seedSumCache = null;
+  function seedSum(b) {
+    if (!seedSumCache) {
+      seedSumCache = new Map();
+      for (const it of seedEntries()) for (const x of it.e.blocks) {
+        if (!x || typeof x !== "object" || !x.sum) continue;
+        const t = oneLine(x.t === "note" ? x.text : x.t === "img" ? x.cap : textOf(x.html));
+        if (t) seedSumCache.set(t, descLine(x.sum));
+      }
+    }
+    return (b && seedSumCache.get(blockText(b))) || "";
+  }
+  function autoLabel(b, concept) {
+    if (b.t === "img") return "Картинка" + (b.cap ? ": " + short(b.cap, 60) : "");
+    if (b.t === "note") return "Заметка: " + (short(b.text, 70) || "пустая");
+    // у абзаца концепции — его начало жирным («Звук.», «1. …»)
+    if (concept) { const m = /^\s*<b>([\s\S]*?)<\/b>/.exec(b.html || ""); if (m) { const t = textOf(m[1]).replace(/[.:]\s*$/, "").trim(); if (t) return short(t, 80); } }
+    const w = blockText(b).split(/\s+/).filter(Boolean);
+    return w.length ? w.slice(0, 8).join(" ") + (w.length > 8 ? "…" : "") : "Пустой абзац";
+  }
+  function sumOf(b) { return descLine(b.sum) || seedSum(b) || descLine(b.sum0); }
+  function labelOf(b, concept) { return sumOf(b) || autoLabel(b, concept); }
+  function marksOf(blocks) {
+    const g = {}; let c = 0;
+    for (const b of blocks) {
+      c += (b.cm || []).length;
+      if (b.html && b.html.includes("data-g=")) for (const m of b.html.matchAll(/data-g="([\w-]+)"/g)) g[m[1]] = (g[m[1]] || 0) + 1;
+    }
+    return { g, c };
+  }
+
+  // ----- Раскладка: одна на любом масштабе -----
+  function mapLayout() { return nearLayout(mapSync()); }
+  // Линия от блока a (снизу) к блоку b (сверху); рядом стоящие — сбоку. cx, cy — где подпись «под вопросом»
+  function link(a, b) {
+    const ox = a.ax, oy = a.y + a.h, ix = b.ax, iy = b.y;
+    if (iy >= oy) { const my = oy + Math.min(ML.blGap / 2, (iy - oy) / 2); return { d: `M${ox} ${oy}V${my}H${ix}V${iy}`, cx: ix - 6, cy: (my + iy) / 2 }; }
+    const ay = a.y + a.h / 2, by = b.y + b.h / 2;
+    if (b.x >= a.x + a.w) { const mx = (a.x + a.w + b.x) / 2; return { d: `M${a.x + a.w} ${ay}H${mx}V${by}H${b.x}`, cx: mx - 6, cy: (ay + by) / 2 }; }
+    if (b.x + b.w <= a.x) { const mx = (b.x + b.w + a.x) / 2; return { d: `M${a.x} ${ay}H${mx}V${by}H${b.x + b.w}`, cx: mx - 6, cy: (ay + by) / 2 }; }
+    return { d: `M${a.x + a.w / 2} ${ay}L${b.x + b.w / 2} ${by}`, cx: (a.x + b.x) / 2, cy: (ay + by) / 2 };
+  }
+  // Всё на своих местах, полосы эпох; концепция, которой нет на поле, — только в правой панели
+  function nearLayout(st) {
+    const N = [], E = [], Eb = [], m = doc.map;
+    const node = (k, id, x, y, w, h, o) => { const n = { k, id, x, y, w, h, ...o }; N.push(n); return n; };
+    const eps = epochsSorted(), groups = epochsNow(st);
+    const attached = new Set(); st.chapters.forEach(c => c.blocks.forEach(b => attached.add(b.id)));
+    for (const c of st.chapters) {
+      const p = mpos("c", c.s.id); if (!p) continue;
+      node("ch", c.s.id, p.x, p.y, ML.chW, ML.chH, { s: c.s, bl: c.blocks });
+      const my = p.y + ML.chH / 2;
+      E.push({ d: p.x + ML.chW / 2 < 0 ? `M${p.x + ML.chW} ${my}H0` : `M0 ${my}H${p.x}` });
+      // нить: от главы по абзацам в порядке книги; «под вопросом» — пунктиром от нити, с подписью
+      let prev = { x: p.x, y: p.y, w: ML.chW, h: ML.chH, ax: p.x + ML.ind + 12 };
+      c.blocks.forEach((b, i) => {
+        const q = mpos("b", b.id); if (!q) return;
+        const qq = qOf(b), f = st.all.get(b.id), cur = { x: q.x, y: q.y, w: ML.blW, h: ML.blH, ax: q.x + 12 };
+        node("bl", b.id, q.x, q.y, ML.blW, ML.blH, { b, s: c.s, i, q: qq, mv: !f || f.s !== c.s });
+        const ln = link(prev, cur);
+        if (qq != null) {
+          E.push({ d: ln.d, cls: "dash" });
+          const t = "?" + (qq ? " " + qq : "");
+          node("qc", b.id, ln.cx, ln.cy - 9, Math.min(230, 16 + t.length * 6.4), 18, { text: t });
+        } else { E.push({ d: ln.d, cls: "thin" }); prev = cur; }
+      });
+    }
+    // блоки концепции на поле — без линий; отвязанные абзацы книги — тоже
+    for (const p of doc.parts) if (p.id !== "book") for (const s of p.sections) s.blocks.forEach((b, i) => {
+      if (attached.has(b.id)) return; const q = mpos("b", b.id); if (q) node("bl", b.id, q.x, q.y, ML.blW, ML.blH, { b, s, i, cc: true });
+    });
+    for (const b of st.out) { const q = mpos("b", b.id), f = st.all.get(b.id); if (q) node("bl", b.id, q.x, q.y, ML.blW, ML.blH, { b, s: f.s, i: f.i, cc: true, mv: true }); }
+    for (const br of m.branches) {
+      const q = mpos("r", br.id); if (!q) continue;
+      node("br", br.id, q.x, q.y, ML.brW, ML.brH, { br });
+      const e = eps.find(x => x.id === br.epoch); if (!e) continue;
+      const ey = e.y + ML.epH / 2, right = q.x >= 0, sx = right ? ML.epW / 2 : -ML.epW / 2, tx = right ? q.x : q.x + ML.brW;
+      E.push({ d: `M${sx} ${ey}H${(sx + tx) / 2}V${q.y + ML.brH / 2}H${tx}`, cls: "dash" });
+    }
+    for (const t of m.texts) { const q = mpos("t", t.id); if (!q) continue; const z = textSize(t.text); node("txt", t.id, q.x, q.y, z.w, z.h, { t }); }
+    for (const g of groups) node("ep", g.e.id, -ML.epW / 2, g.e.y, ML.epW, ML.epH, { e: g.e, secs: g.secs });
+    // границы поля
+    let L = -(ML.gap + ML.chW) - 64, R = ML.gap + ML.chW + 240, B = 0;
+    for (const n of N) { if (n.k === "qc") continue; L = Math.min(L, n.x - 64); R = Math.max(R, n.x + n.w + 96); B = Math.max(B, n.y + n.h); }
+    const T = eps.length ? bandTop(eps[0]) : -ML.band;
+    R = snapUp(R); B += 48;
+    node("plus", "plus", -70, B, 140, 36, {});
+    B += 36 + 40;
+    // полосы эпох через всё поле; граница — линия
+    eps.forEach((e, i) => {
+      const top = bandTop(e), bot = i + 1 < eps.length ? bandTop(eps[i + 1]) : B;
+      Eb.push({ rect: [L, top, R - L, bot - top], cls: "band" + (i % 2 ? " alt" : ""), r: 0 });
+      if (i) Eb.push({ d: `M${L} ${top}H${R}`, cls: "bline" });
+      N.push({ k: "bandlab", id: e.id, x: L + 16, y: top + 10, w: 420, h: 28, text: e.title || "Эпоха" });
+    });
+    if (eps.length) E.unshift({ d: `M0 ${eps[0].y + ML.epH / 2}V${B - 40 - 36 + 18}`, cls: "trunk" });
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const n of N) { minX = Math.min(minX, n.x); minY = Math.min(minY, n.y); maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h); }
+    return { N, E, Eb, minX, minY, maxX, maxY, L, R, T };
+  }
+
+  // ----- Узлы -----
+  function dotsEl(g, withN) {
+    const d = el("span", "mp-dots");
+    for (const gr of doc.groups) {
+      if (!g[gr.id]) continue;
+      const i = el("i", "mp-dot"); i.dataset.g = gr.id; i.title = gr.name + (withN ? ": " + g[gr.id] : "");
+      d.append(i);
+      if (withN) d.append(el("span", "mp-dn", String(g[gr.id])));
+    }
+    return d;
+  }
+  function metaEl(blocks, withN) {
+    const m = el("span", "mp-m"), st = marksOf(blocks);
+    m.append(dotsEl(st.g, withN));
+    if (st.c) { const c = el("span", "mp-cc", String(st.c)); c.title = "Комментариев: " + st.c; m.append(c); }
+    m.append(el("span", "mp-len", numFmt(blocks.reduce((a, b) => a + lenOf(b), 0)) + " зн."));
+    return m;
+  }
+  function mapNodeEl(n) {
+    const d = el("div", "mp-n mp-" + n.k + (n.cc ? " mp-con" : "") + (n.q != null ? " q" : "") + (n.mv ? " mv" : ""));
+    d.style.cssText = `left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px`;
+    d.dataset.k = n.k; d.dataset.id = n.id;
+    const sk = n.k === "cst" ? "cs" : n.k;
+    if ((mapSel && mapSel.k === sk && mapSel.id === n.id) || mapMulti.has(n.k + ":" + n.id)) d.classList.add("sel");
+    if (n.k === "ep") {
+      d.append(el("b", "mp-t", n.e.title || "Эпоха"));
+      d.append(el("span", "mp-m", `глав ${n.secs.length} · ${numFmt(n.secs.reduce((a, s) => a + secLen(s), 0))} зн.`));
+    } else if (n.k === "ch" || n.k === "cs") {
+      d.append(el("span", "mp-t", n.s.title || "Без названия"));
+      d.append(metaEl(n.bl || n.s.blocks, true));
+    } else if (n.k === "cst") d.append(el("span", "mp-t", n.s.title || "Без названия"));
+    else if (n.k === "bl") {
+      const t = el("span", "mp-t", labelOf(n.b, !!n.cc && !n.mv));
+      if (!sumOf(n.b)) t.classList.add("auto");
+      d.append(t, metaEl([n.b], false));
+    } else if (n.k === "br") d.append(el("span", "mp-t", n.br.title || "Ветвь"));
+    else if (n.k === "plus") d.append(el("span", "mp-t", "+ эпоха"));
+    else if (n.k === "txt") { d.textContent = n.t.text || "Текст"; if (!n.t.text) d.classList.add("empty"); }
+    else if (n.k === "lab" || n.k === "bandlab" || n.k === "qc" || n.k === "cn") d.append(el("span", "mp-t", n.text));
+    return d;
+  }
+
+  // ----- Вид: сдвиг и масштаб (как в Miro: раскладка одна, карта просто плавно приближается и отдаляется) -----
+  function mz() { return MV.k; }
+  function mapDraw() {
+    const w = mapEls.world; if (!w || !w.isConnected) return;
+    const lay = mapLay = mapLayout();
+    w.textContent = "";
+    const NS = "http://www.w3.org/2000/svg", pad = 60;
+    const x0 = lay.minX - pad, y0 = lay.minY - pad, W = lay.maxX - lay.minX + 2 * pad, H = lay.maxY - lay.minY + 2 * pad;
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "mp-edges"); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", `${x0} ${y0} ${W} ${H}`);
+    svg.style.left = x0 + "px"; svg.style.top = y0 + "px";
+    for (const e of [...lay.Eb, ...lay.E]) {
+      let s;
+      if (e.rect) { s = document.createElementNS(NS, "rect"); const [x, y, rw, rh] = e.rect; s.setAttribute("x", x); s.setAttribute("y", y); s.setAttribute("width", rw); s.setAttribute("height", rh); s.setAttribute("rx", e.r != null ? e.r : 12); }
+      else { s = document.createElementNS(NS, "path"); s.setAttribute("d", e.d); }
+      s.setAttribute("class", "mp-e" + (e.cls ? " " + e.cls : ""));
+      svg.append(s);
+    }
+    w.append(svg);
+    const fr = document.createDocumentFragment();
+    for (const n of lay.N) fr.append(mapNodeEl(n));
+    w.append(fr);
+    mapApply();
+    mapBarState();
+  }
+  function mapDrawSoon() { clearTimeout(mapTimer); mapTimer = setTimeout(() => { if (prefs.tab === MAP && !mapDrag) mapDraw(); }, 150); }
+  function mapApply() {
+    const w = mapEls.world; if (!w || !MV) return;
+    w.style.transform = `translate(${MV.x}px, ${MV.y}px) scale(${MV.k})`;
+    w.classList.toggle("lod", MV.k < LOD_K);   // совсем мелко — текст абзацев серыми полосками
+    if (mapEls.zl) mapEls.zl.textContent = Math.round(MV.k * 100) + "%";
+    // название эпохи держится у левого края экрана, пока видна её полоса
+    if (mapLay) {
+      const vl = (-MV.x + 14) / MV.k, lo = mapLay.L + 16, hi = Math.max(lo, mapLay.R - 440);
+      w.querySelectorAll(".mp-bandlab").forEach(x => { x.style.left = Math.max(lo, Math.min(vl, hi)) + "px"; });
+    }
+    mapMini();
+    clearTimeout(mapSaveT);
+    mapSaveT = setTimeout(() => { prefs.mapView = { x: Math.round(MV.x), y: Math.round(MV.y), k: +MV.k.toFixed(4) }; savePrefs(); }, 600);
+  }
+  // Масштаб z вокруг точки экрана sx, sy
+  function mapZoomAt(z, sx, sy) {
+    if (!MV) return;
+    z = Math.min(2.5, Math.max(0.05, z));
+    MV.x = sx - (sx - MV.x) * z / MV.k; MV.y = sy - (sy - MV.y) * z / MV.k; MV.k = z;
+    mapApply();
+  }
+  // «−», «+» и клавиши — плавно, за пятую долю секунды
+  let zoomAnim = 0;
+  function mapZoomBy(f) {
+    const c = mapEls.can; if (!c || !MV) return;
+    cancelAnimationFrame(zoomAnim);
+    const sx = c.clientWidth / 2, sy = c.clientHeight / 2, z0 = MV.k, z1 = Math.min(2.5, Math.max(0.05, z0 * f)), t0 = performance.now();
+    const step = t => {
+      const q = Math.min(1, (t - t0) / 180), e = 1 - Math.pow(1 - q, 3);
+      mapZoomAt(z0 * Math.pow(z1 / z0, e), sx, sy);
+      if (q < 1) zoomAnim = requestAnimationFrame(step);
+    };
+    zoomAnim = requestAnimationFrame(step);
+  }
+  // «Вписать всё»: вся карта на экране
+  function mapFit() {
+    const c = mapEls.can; if (!c) return;
+    const cw = c.clientWidth, ch = c.clientHeight; if (!cw || !ch) return;
+    if (!MV) MV = { x: 0, y: 0, k: 1 };
+    mapDraw();
+    const lay = mapLay, k = Math.min(1.2, Math.max(0.05, Math.min(cw / (lay.maxX - lay.minX + 100), ch / (lay.maxY - lay.minY + 100))));
+    MV = { k, x: (cw - (lay.maxX - lay.minX) * k) / 2 - lay.minX * k, y: (ch - (lay.maxY - lay.minY) * k) / 2 - lay.minY * k };
+    mapApply();
+  }
+  // Узел — в видимую часть канвы (на телефоне — над нижней панелью)
+  function mapReveal(id) {
+    const n = mapLay && mapLay.N.find(q => q.id === id && q.k !== "qc" && q.k !== "bandlab"); if (!n || !MV) return;
+    const c = mapEls.can, cw = c.clientWidth; let ch = c.clientHeight;
+    if (mapEls.body.classList.contains("has-sel") && getComputedStyle(mapEls.panel).position === "absolute") ch -= mapEls.panel.offsetHeight;
+    const sx = MV.x + n.x * MV.k, sy = MV.y + n.y * MV.k, sw = n.w * MV.k, sh = n.h * MV.k;
+    let dx = 0, dy = 0;
+    if (sx < 12) dx = 12 - sx; else if (sx + sw > cw - 12) dx = Math.max(12 - sx, cw - 12 - sx - sw);
+    if (sy < 12) dy = 12 - sy; else if (sy + sh > ch - 12) dy = Math.max(12 - sy, ch - 12 - sy - sh);
+    if (dx || dy) { MV.x += dx; MV.y += dy; mapApply(); }
+  }
+  // Показать узел (из списка на панели): совсем мелко — подойти ближе
+  function mapShow(sel) {
+    const n = mapLay && mapLay.N.find(q => q.id === sel.id && q.k === sel.k), c = mapEls.can;
+    if (n && MV && c && MV.k < 0.6) { MV.k = 0.9; MV.x = c.clientWidth / 2 - (n.x + n.w / 2) * MV.k; MV.y = c.clientHeight / 3 - (n.y + n.h / 2) * MV.k; mapApply(); }
+    mapSelect(sel); mapReveal(sel.id);
+  }
+
+  // ----- Мини-карта -----
+  function mapMini() {
+    const c = mapEls.mini, lay = mapLay; if (!c || !lay || !MV) return;
+    const W = c.clientWidth || 168, H = c.clientHeight || 120, dpr = window.devicePixelRatio || 1;
+    if (c.width !== Math.round(W * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W, H);
+    const bw = lay.maxX - lay.minX || 1, bh = lay.maxY - lay.minY || 1, s = Math.min((W - 10) / bw, (H - 10) / bh);
+    const ox = (W - bw * s) / 2 - lay.minX * s, oy = (H - bh * s) / 2 - lay.minY * s;
+    const css = getComputedStyle(c), col = v => css.getPropertyValue(v).trim() || "#888";
+    for (const n of lay.N) {
+      if (["lab", "plus", "qc", "bandlab"].includes(n.k)) continue;
+      x.fillStyle = col(n.k === "ep" ? "--accent" : n.k === "ch" ? "--mp-ch-line" : n.cc || n.k === "txt" ? "--line" : "--muted");
+      x.fillRect(ox + n.x * s, oy + n.y * s, Math.max(1.5, n.w * s), Math.max(1.5, n.h * s));
+    }
+    const cv = mapEls.can, vx = -MV.x / MV.k, vy = -MV.y / MV.k, vw = cv.clientWidth / MV.k, vh = cv.clientHeight / MV.k;
+    x.strokeStyle = col("--fg"); x.lineWidth = 1.5; x.strokeRect(ox + vx * s, oy + vy * s, vw * s, vh * s);
+    c._m = { s, ox, oy };
+  }
+
+  // ----- Выделение группой: рамкой по пустому месту или Shift+щелчок; тянешь любой выделенный — едут все -----
+  const SEL_K = ["bl", "ch", "txt", "br"];
+  const selKey = (k, id) => k + ":" + id;
+  const keyParts = key => { const i = key.indexOf(":"); return [key.slice(0, i), key.slice(i + 1)]; };
+  function mapPaintSel() {
+    const w = mapEls.world; if (!w) return;
+    w.querySelectorAll(".mp-n.sel").forEach(x => x.classList.remove("sel"));
+    w.querySelectorAll(".mp-n").forEach(x => {
+      const k = x.dataset.k;
+      if (mapMulti.has(selKey(k, x.dataset.id)) || (mapSel && mapSel.id === x.dataset.id && (k === "cst" ? "cs" : k) === mapSel.k)) x.classList.add("sel");
+    });
+  }
+  function mapMultiSet(keys) {
+    const ks = [...new Set(keys)];
+    if (ks.length === 1) { const [k, id] = keyParts(ks[0]); mapSelect({ k, id }); return; }
+    mapSel = null; mapMulti = new Set(ks);
+    mapPaintSel(); mapPanel();
+  }
+  function mapMultiToggle(k, id) {
+    const cur = mapMulti.size ? [...mapMulti] : mapSel && SEL_K.includes(mapSel.k) ? [selKey(mapSel.k, mapSel.id)] : [];
+    const key = selKey(k, id), next = cur.includes(key) ? cur.filter(x => x !== key) : [...cur, key];
+    if (!next.length) mapSelect(null); else mapMultiSet(next);
+  }
+
+  // ----- Перетаскивание: мышью — сразу, пальцем — подержать полсекунды; отпущенное встаёт в клетку сетки -----
+  const DRAG_K = ["ch", "bl", "br", "txt", "ep"];
+  function dragStart(g) {
+    const nd = g.dn, k = nd.dataset.k, id = nd.dataset.id, w = mapEls.world;
+    const n = mapLay && mapLay.N.find(q => q.k === k && q.id === id); if (!n) return false;
+    const group = k !== "ep" && mapMulti.size > 1 && mapMulti.has(selKey(k, id));
+    const keys = group ? [...mapMulti] : [selKey(k, id)], ids = new Set(keys);
+    for (const key of keys) { const [kk, ii] = keyParts(key); if (kk === "ch") { const cn = mapLay.N.find(q => q.k === "ch" && q.id === ii); ((cn && cn.bl) || []).forEach(b => ids.add("bl:" + b.id)); } }
+    const els = [...w.querySelectorAll(".mp-n")].filter(x => ids.has(x.dataset.k + ":" + x.dataset.id) || (x.dataset.k === "qc" && ids.has("bl:" + x.dataset.id)));
+    let lo = -1e9, hi = 1e9;
+    if (k === "ep") { const eps = epochsSorted(), i = eps.findIndex(e => e.id === id); if (eps[i - 1]) lo = eps[i - 1].y + 96; if (eps[i + 1]) hi = eps[i + 1].y - 96; }
+    mapDrag = { k, id, n, els, keys, group, sw: { x: (g.start.x - MV.x) / MV.k, y: (g.start.y - MV.y) / MV.k }, p: g.start, c: g.cstart, dx: 0, dy: 0, target: null, out: false, lo, hi, raf: 0 };
+    g.drag = true;
+    els.forEach(x => x.classList.add("lift"));
+    mapEls.can.classList.add("dragging");
+    const sv = w.querySelector(".mp-edges"); if (sv) sv.classList.add("dim");
+    if (g.touch) try { navigator.vibrate && navigator.vibrate(12); } catch (e) { }
+    return true;
+  }
+  // Куда бросаем абзац: глава или абзац главы (с линией) под точкой поля
+  function dropTarget(wx, wy, skip) {
+    for (const q of mapLay.N) {
+      if (q.id === skip || !(q.k === "ch" || (q.k === "bl" && !q.cc))) continue;
+      if (wx >= q.x && wx <= q.x + q.w && wy >= q.y && wy <= q.y + q.h) return { k: q.k, id: q.id, sid: q.k === "ch" ? q.id : q.s.id };
+    }
+    return null;
+  }
+  function paintDrop(t) {
+    const w = mapEls.world; if (!w) return;
+    w.querySelectorAll(".mp-n.drop").forEach(x => x.classList.remove("drop"));
+    if (t) { const x = w.querySelector(`.mp-n[data-k="${t.k}"][data-id="${t.id}"]`); if (x) x.classList.add("drop"); }
+  }
+  function overPanel(cl) {
+    const P = mapEls.panel; if (!P || !cl) return false;
+    const r = P.getBoundingClientRect();
+    return r.width > 0 && cl.x >= r.left && cl.x <= r.right && cl.y >= r.top && cl.y <= r.bottom && r.top < window.innerHeight;
+  }
+  function dragUpdate() {
+    const d = mapDrag; if (!d) return;
+    const wx = (d.p.x - MV.x) / MV.k, wy = (d.p.y - MV.y) / MV.k, n = d.n;
+    let nx = n.x + wx - d.sw.x, ny = n.y + wy - d.sw.y;
+    if (d.k === "ep") { nx = n.x; ny = Math.min(d.hi, Math.max(d.lo, snapV(ny))); } else { nx = snapV(nx); ny = snapV(ny); }
+    d.dx = nx - n.x; d.dy = ny - n.y;
+    for (const x of d.els) x.style.transform = `translate(${d.dx}px, ${d.dy}px)`;
+    if (d.k !== "bl" || d.group) return;
+    // на главу, на абзац главы — привязать; на правую панель — убрать с карты
+    const out = overPanel(d.c), t = out ? null : dropTarget(wx, wy, d.id);
+    if ((d.target && d.target.k + d.target.id) !== (t && t.k + t.id)) paintDrop(t);
+    if (out !== d.out) mapEls.panel.classList.toggle("drop", out);
+    d.target = t; d.out = out;
+  }
+  // У края экрана карта едет за пальцем (мышью)
+  function dragMove(p, cl) {
+    const d = mapDrag; if (!d) return;
+    d.p = p; if (cl) d.c = cl; dragUpdate();
+    if (d.raf) return;
+    const step = () => {
+      const q = mapDrag; if (!q) return;
+      const c = mapEls.can, E = 40, v = 12; let vx = 0, vy = 0;
+      if (q.p.x < E) vx = v; else if (q.p.x > c.clientWidth - E && q.p.x < c.clientWidth + 4) vx = -v;
+      if (q.p.y < E) vy = v; else if (q.p.y > c.clientHeight - E && q.p.y < c.clientHeight + 4) vy = -v;
+      if (!vx && !vy) { q.raf = 0; return; }
+      MV.x += vx; MV.y += vy; mapApply(); dragUpdate();
+      q.raf = requestAnimationFrame(step);
+    };
+    d.raf = requestAnimationFrame(step);
+  }
+  function dragEnd() {
+    const d = mapDrag; mapDrag = null;
+    if (d && d.raf) cancelAnimationFrame(d.raf);
+    if (mapEls.can) mapEls.can.classList.remove("dragging");
+    if (mapEls.panel) mapEls.panel.classList.remove("drop");
+    return d;
+  }
+  function dragCancel() { if (dragEnd()) mapDraw(); }
+  // Группа: главы — вместе со своими абзацами; абзац, чья глава тоже едет, второй раз не двигаем
+  function groupMove(m, st, keys, dx, dy) {
+    const moved = new Set();
+    for (const key of keys) { const [k, id] = keyParts(key); if (k !== "ch") continue; const c = st.chapters.find(q => q.s.id === id); if (c) { shiftChapter(m, c, dx, dy); c.blocks.forEach(b => moved.add(b.id)); } }
+    for (const key of keys) {
+      const [k, id] = keyParts(key), pk = { bl: "b", txt: "t", br: "r" }[k];
+      if (!pk || (k === "bl" && moved.has(id))) continue;
+      const p = m.pos[pk + ":" + id]; if (p) { p[0] += dx; p[1] += dy; }
+    }
+  }
+  // Убрать с карты: абзац концепции — обратно только в панель; абзац книги — отвязать (уйдёт в «С карты» при сохранении)
+  function unplace(m, st, bid) {
+    const f = findBlock(bid); if (!f) return;
+    closeGap(m, st, bid);
+    if (st.where.has(bid) || st.out.some(b => b.id === bid) || f.p.id === "book") detachIn(m, st, bid);
+    delete m.pos["b:" + bid];
+  }
+  function dragDrop() {
+    const d = dragEnd(); if (!d) return;
+    const n = d.n, nx = n.x + d.dx, ny = n.y + d.dy;
+    if (!d.dx && !d.dy && !d.target && !d.out) { mapDraw(); return; }
+    if (d.group) return mapEdit((m, st) => groupMove(m, st, d.keys, d.dx, d.dy));
+    if (d.k === "ep") return mapEdit(m => { const e = m.epochs.find(q => q.id === d.id); if (e) e.y = ny; });
+    if (d.k === "txt") return mapEdit(m => setPos(m, "t", d.id, nx, ny));
+    if (d.k === "br") return mapEdit(m => setPos(m, "r", d.id, nx, ny));
+    if (d.k === "ch") return mapEdit((m, st) => { const c = st.chapters.find(q => q.s.id === d.id); if (c) shiftChapter(m, c, d.dx, d.dy); });
+    const f = findBlock(d.id); if (!f) { mapDraw(); return; }
+    const st = mapStruct(), home = st.where.has(d.id) ? st.where.get(d.id) : null;
+    if (d.out) return mapEdit((m, s2) => unplace(m, s2, d.id), f.p.id === "book" ? "Отвязано — уйдёт из главы при сохранении" : "Убрано с карты");
+    if (d.target) {
+      const t = d.target;
+      if (home === t.sid) return mapEdit((m, s2) => insertAt(m, s2, d.id, t));
+      return dropMenu(d.id, t);
+    }
+    mapEdit(m => setPos(m, "b", d.id, nx, ny));
+  }
+  // Бросил абзац на чужую главу (или на её абзац): привязать, привязать «под вопросом» или отменить
+  function dropMenu(bid, t) {
+    const anchor = mapEls.world.querySelector(`.mp-n[data-k="${t.k}"][data-id="${t.id}"]`) || mapEls.can;
+    openPop(anchor, [
+      { label: "Привязать сюда", fn: () => mapEdit((m, st) => { insertAt(m, st, bid, t); setQ(m, bid, null); }, "Привязано — в книге будет после «Сохранить в книгу»") },
+      { label: "Под вопросом…", fn: () => openQ("", cap => mapEdit((m, st) => { insertAt(m, st, bid, t); setQ(m, bid, cap); }, "Привязано под вопросом"), "Привязать") },
+      { label: "Отмена", fn: () => { } }
+    ]);
+    popClose = () => mapDraw();
+  }
+  // Окно «Под вопросом»: подпись на линии (необязательно)
+  function openQ(cap, done, okLabel) {
+    const i = el("input"); i.type = "text"; i.maxLength = 200; i.value = cap || ""; i.placeholder = "например: может, в другую главу?";
+    i.setAttribute("aria-label", "Подпись");
+    const go = () => { done(descLine(i.value)); };
+    i.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); go(); closeModal(); } });
+    openModal("Под вопросом", frag(el("p", "muted", "Подпись (необязательно)"), i), [
+      { label: okLabel || "Готово", primary: true, fn: go },
+      { label: "Отмена" }
+    ]);
+    setTimeout(() => { try { i.focus(); } catch (e) { } }, 30);
+  }
+
+  // ----- Абзац концепции из правой панели — на канву: мышью тянуть строку, пальцем — подержать и тянуть -----
+  let pDrag = null;
+  function panelDragBind(row, bid) {
+    row.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const s = { bid, row, pid: e.pointerId, x: e.clientX, y: e.clientY, touch: e.pointerType !== "mouse", on: false };
+      pDrag = s;
+      if (s.touch) s.timer = setTimeout(() => { if (pDrag === s && !s.moved) pdStart(s); }, 420);
+    });
+    row.addEventListener("pointermove", e => {
+      const s = pDrag; if (!s || s.row !== row || e.pointerId !== s.pid) return;
+      if (s.on) { e.preventDefault(); pdMove(s, e.clientX, e.clientY); return; }
+      if (Math.hypot(e.clientX - s.x, e.clientY - s.y) < (s.touch ? 8 : 5)) return;
+      if (s.touch) { clearTimeout(s.timer); s.moved = true; pDrag = null; return; }   // палец повёл сразу — это прокрутка списка
+      pdStart(s); pdMove(s, e.clientX, e.clientY);
+    });
+    const end = e => {
+      const s = pDrag; if (!s || s.row !== row || e.pointerId !== s.pid) return;
+      clearTimeout(s.timer); pDrag = null;
+      if (s.on) { row._dragged = true; setTimeout(() => { row._dragged = false; }, 50); pdDrop(s, e.clientX, e.clientY, e.type === "pointercancel"); }
+    };
+    row.addEventListener("pointerup", end); row.addEventListener("pointercancel", end);
+  }
+  function pdStart(s) {
+    s.on = true;
+    try { s.row.setPointerCapture(s.pid); } catch (e) { }
+    const f = findBlock(s.bid);
+    s.ghost = el("div", "mp-ghost", f ? labelOf(f.b, f.p.id !== "book") : "Абзац");
+    document.body.append(s.ghost);
+    s.row.classList.add("lift");
+    if (s.touch) try { navigator.vibrate && navigator.vibrate(12); } catch (e) { }
+  }
+  function pdMove(s, x, y) {
+    s.ghost.style.left = x + 10 + "px"; s.ghost.style.top = y + 10 + "px";
+    const c = mapEls.can, r = c && c.getBoundingClientRect();
+    s.w = null; s.t = null;
+    if (r && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom && !overPanel({ x, y }) && MV) {
+      s.w = { x: (x - r.left - MV.x) / MV.k, y: (y - r.top - MV.y) / MV.k };
+      s.t = dropTarget(s.w.x, s.w.y, s.bid);
+    }
+    paintDrop(s.t);
+  }
+  function pdDrop(s, x, y, cancel) {
+    if (s.ghost) s.ghost.remove();
+    s.row.classList.remove("lift");
+    paintDrop(null);
+    if (cancel || !s.w) return;
+    const id = s.bid, st = mapStruct(), home = st.where.has(id) ? st.where.get(id) : null;
+    if (s.t) { if (home === s.t.sid) return mapEdit((m, s2) => insertAt(m, s2, id, s.t)); return dropMenu(id, s.t); }
+    const w = s.w;
+    mapEdit(m => setPos(m, "b", id, snapV(w.x - ML.blW / 2), snapV(w.y - ML.blH / 2)), "На карте");
+  }
+
+  // ----- Жесты: левой кнопкой по пустому месту — рамка выделения, правой — сдвиг канвы, колесо / два пальца — масштаб;
+  // пальцем: вести — сдвиг, подержать на блоке — тянуть его, подержать на пустом месте — рамка -----
+  function mapBind(can, mini) {
+    const pts = new Map(); let g = null;
+    const local = e => { const r = can.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    const client = e => ({ x: e.clientX, y: e.clientY });
+    const rubberStart = gg => {
+      gg.rubber = true; gg.moved = true;
+      gg.rb = el("div", "mp-rubber"); can.append(gg.rb);
+      if (gg.touch) try { navigator.vibrate && navigator.vibrate(12); } catch (e) { }
+    };
+    const rubberMove = (gg, p) => {
+      const x = Math.min(gg.start.x, p.x), y = Math.min(gg.start.y, p.y), w = Math.abs(p.x - gg.start.x), h = Math.abs(p.y - gg.start.y);
+      gg.rect = { x, y, w, h }; gg.rb.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`;
+    };
+    const rubberEnd = (gg, apply) => {
+      if (gg.rb) gg.rb.remove();
+      if (!apply || !gg.rect || !mapLay) return;
+      const r = gg.rect, x0 = (r.x - MV.x) / MV.k, y0 = (r.y - MV.y) / MV.k, x1 = (r.x + r.w - MV.x) / MV.k, y1 = (r.y + r.h - MV.y) / MV.k;
+      const hit = mapLay.N.filter(n => SEL_K.includes(n.k) && n.x < x1 && n.x + n.w > x0 && n.y < y1 && n.y + n.h > y0).map(n => selKey(n.k, n.id));
+      const base = gg.shift ? (mapMulti.size ? [...mapMulti] : mapSel && SEL_K.includes(mapSel.k) ? [selKey(mapSel.k, mapSel.id)] : []) : [];
+      const all = [...base, ...hit];
+      if (all.length) mapMultiSet(all); else mapSelect(null);
+    };
+    can.addEventListener("contextmenu", e => e.preventDefault());
+    can.addEventListener("pointerdown", e => {
+      if (e.target === mini) return;
+      const mouse = e.pointerType === "mouse";
+      if (mouse && e.button > 2) return;
+      try { can.setPointerCapture(e.pointerId); } catch (er) { }
+      pts.set(e.pointerId, local(e));
+      if (pts.size === 1) {
+        const nd = e.target.closest ? e.target.closest(".mp-n") : null;
+        const pan = mouse && e.button !== 0;          // правая и средняя кнопка — двигать канву
+        const dn = !pan && nd && DRAG_K.includes(nd.dataset.k) ? nd : null;
+        g = { last: local(e), start: local(e), cstart: client(e), moved: false, t: e.target, nd, dn, touch: !mouse, pan, shift: e.shiftKey || e.ctrlKey || e.metaKey };
+        if (pan) can.classList.add("grabbing");
+        if (g.touch) { const my = g; g.timer = setTimeout(() => { if (g !== my || my.moved || pts.size !== 1) return; if (my.dn) dragStart(my); else rubberStart(my); }, 420); }
+      } else {
+        if (g) { clearTimeout(g.timer); if (g.drag) { g.drag = false; dragCancel(); } if (g.rubber) { g.rubber = false; rubberEnd(g, false); } }
+        g = g || {}; g.moved = true; g.pinch = null;
+      }
+    });
+    can.addEventListener("pointermove", e => {
+      if (!pts.has(e.pointerId) || !g) return;
+      const p = local(e); pts.set(e.pointerId, p);
+      if (g.drag) { dragMove(p, client(e)); return; }
+      if (g.rubber) { rubberMove(g, p); return; }
+      if (pts.size >= 2) {
+        const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y), cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        if (g.pinch) { MV.x += cx - g.pinch.cx; MV.y += cy - g.pinch.cy; mapZoomAt(MV.k * d / g.pinch.d, cx, cy); }
+        g.pinch = { d: d || 1, cx, cy }; g.moved = true; return;
+      }
+      if (!g.moved && Math.hypot(p.x - g.start.x, p.y - g.start.y) < (g.touch ? 8 : 5)) return;
+      clearTimeout(g.timer);
+      if (!g.moved && !g.touch && !g.pan) {
+        g.moved = true;
+        if (g.dn) { if (dragStart(g)) { dragMove(p, client(e)); return; } }
+        else { rubberStart(g); rubberMove(g, p); return; }
+      }
+      if (!g.moved) can.classList.add("grabbing");
+      g.moved = true;
+      MV.x += p.x - g.last.x; MV.y += p.y - g.last.y; g.last = p; mapApply();
+    });
+    const up = e => {
+      if (!pts.has(e.pointerId)) return;
+      pts.delete(e.pointerId);
+      if (g && g.drag) { if (!pts.size) { g = null; if (e.type === "pointercancel") dragCancel(); else dragDrop(); } return; }
+      if (g && g.rubber) { if (!pts.size) { const was = g; g = null; rubberEnd(was, e.type !== "pointercancel"); } return; }
+      if (pts.size === 1 && g) { g.pinch = null; g.last = [...pts.values()][0]; return; }
+      if (pts.size) return;
+      can.classList.remove("grabbing");
+      const was = g; g = null;
+      if (was) clearTimeout(was.timer);
+      if (!was || was.moved || was.pan || e.type === "pointercancel") return;
+      const node = was.t.closest && was.t.closest(".mp-n");
+      if (!node) { mapSelect(null); return; }
+      const k = node.dataset.k;
+      if (k === "plus") { const eps = epochsSorted(); epochAdd(eps.length ? eps[eps.length - 1].id : null); return; }
+      if (k === "lab") { mapSelect(null); return; }
+      if (was.shift && SEL_K.includes(k)) { mapMultiToggle(k, node.dataset.id); return; }
+      const sk = k === "cst" ? "cs" : k === "qc" ? "bl" : k === "bandlab" || k === "cn" ? "ep" : k;
+      mapSelect({ k: sk, id: node.dataset.id }, was.t.closest(".mp-cc") ? "cm" : null);
+      mapReveal(node.dataset.id);
+    };
+    can.addEventListener("pointerup", up); can.addEventListener("pointercancel", up);
+    // двойной щелчок по пустому месту поля — серая подпись там
+    can.addEventListener("dblclick", e => {
+      const at = document.elementFromPoint(e.clientX, e.clientY);   // e.target — сама канва (она держит указатель)
+      if (!MV || !at || (at.closest && at.closest(".mp-n, .mp-mini"))) return;
+      const p = local(e);
+      mapAddText({ x: (p.x - MV.x) / MV.k, y: (p.y - MV.y) / MV.k - 12 });
+    });
+    can.addEventListener("wheel", e => {
+      e.preventDefault();
+      const p = local(e), dy = e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY;
+      mapZoomAt(MV.k * Math.exp(-dy * 0.0016), p.x, p.y);
+      if (mapDrag) dragUpdate();
+    }, { passive: false });
+    can.addEventListener("keydown", e => {
+      if (e.key === "+" || e.key === "=") { e.preventDefault(); mapZoomBy(1.25); }
+      else if (e.key === "-") { e.preventDefault(); mapZoomBy(1 / 1.25); }
+      else if (e.key === "Escape" && mapDrag) { e.stopPropagation(); g = null; dragCancel(); }
+      else if (e.key === "Escape" && (mapSel || mapMulti.size)) { e.stopPropagation(); mapSelect(null); }
+    });
+    // мини-карта: нажми или веди — туда встанет середина экрана
+    const go = e => {
+      const m = mini._m; if (!m || !MV) return;
+      const r = mini.getBoundingClientRect(), wx = (e.clientX - r.left - m.ox) / m.s, wy = (e.clientY - r.top - m.oy) / m.s;
+      MV.x = can.clientWidth / 2 - wx * MV.k; MV.y = can.clientHeight / 2 - wy * MV.k; mapApply();
+    };
+    mini.addEventListener("pointerdown", e => { e.stopPropagation(); try { mini.setPointerCapture(e.pointerId); } catch (er) { } go(e); });
+    mini.addEventListener("pointermove", e => { if (e.buttons || e.pointerType !== "mouse") { if (mini.hasPointerCapture && mini.hasPointerCapture(e.pointerId)) go(e); } });
+  }
+
+  // ----- Вкладка -----
+  function renderMap(v) {
+    if (!MV && prefs.mapView && isFinite(prefs.mapView.k) && prefs.mapView.k > 0) MV = { x: +prefs.mapView.x || 0, y: +prefs.mapView.y || 0, k: +prefs.mapView.k };
+    mapDrag = null;
+    const wrap = el("div", "mp"), bar = el("div", "mp-bar");
+    const zm = btn("mp-z", "−", () => mapZoomBy(1 / 1.25)); zm.setAttribute("aria-label", "Мельче"); zm.title = "Мельче";
+    const zl = el("span", "mp-k");
+    const zp = btn("mp-z", "+", () => mapZoomBy(1.25)); zp.setAttribute("aria-label", "Крупнее"); zp.title = "Крупнее";
+    const add = el("span", "mp-add");
+    add.append(btn("", "+ Глава", () => { const p = mapCenter(); mapAddChapter({ x: p.x - ML.chW / 2, y: p.y - ML.chH / 2 }); }), btn("", "+ Блок", () => mapAddBlock()), btn("", "+ Текст", () => mapAddText()));
+    // на телефоне панель снизу открывается только по выделению — эта кнопка открывает её с обзором и концепцией
+    add.append(btn("mp-only-phone", "Концепция", () => { mapNav = { home: true }; mapSelect(null); }));
+    // черновик: сколько перестановок, «Сохранить в книгу», «Сбросить» — только когда они есть
+    const dr = el("span", "mp-dr"), chg = el("span", "mp-chg");
+    const save = btn("primary", "Сохранить в книгу", () => mapSaveDraft());
+    const reset = mpConfirm("Сбросить", "Сбросить?", () => mapResetDraft());
+    dr.append(chg, save, reset);
+    const fit = btn("", "Вписать", () => mapFit()); fit.append(el("span", "mp-long", " всё"));
+    bar.append(zm, zl, zp, fit, add, dr);
+    const body = el("div", "mp-body"), can = el("div", "mp-can"), world = el("div", "mp-world"), mini = el("canvas", "mp-mini");
+    can.tabIndex = 0; can.setAttribute("aria-label", "Карта книги"); mini.setAttribute("aria-label", "Мини-карта");
+    can.append(world, mini);
+    const panel = el("aside", "mp-panel");
+    // ширина правой панели: тянуть её левый край; запоминается на этом устройстве
+    const rs = el("div", "mp-rs"); rs.setAttribute("role", "separator"); rs.setAttribute("aria-label", "Ширина панели");
+    const setW = w => { panel.style.setProperty("--pw", w + "px"); panel.style.setProperty("--pwmax", "none"); };
+    if (prefs.mapPanelW > 0) setW(prefs.mapPanelW);
+    rs.addEventListener("pointerdown", e => { e.preventDefault(); try { rs.setPointerCapture(e.pointerId); } catch (er) { } rs.classList.add("on"); });
+    rs.addEventListener("pointermove", e => {
+      if (!rs.classList.contains("on")) return;
+      const r = body.getBoundingClientRect(), w = Math.round(Math.max(260, Math.min(r.width - 320, r.right - e.clientX)));
+      setW(w); rs._w = w; mapApply();
+    });
+    const rsEnd = () => { if (!rs.classList.contains("on")) return; rs.classList.remove("on"); if (rs._w) { prefs.mapPanelW = rs._w; savePrefs(); } };
+    rs.addEventListener("pointerup", rsEnd); rs.addEventListener("pointercancel", rsEnd);
+    // пока абзац тянут из списка пальцем, список не прокручивается
+    panel.addEventListener("touchmove", e => { if (pDrag && pDrag.on) e.preventDefault(); }, { passive: false });
+    body.append(can, rs, panel); wrap.append(bar, body); v.append(wrap);
+    mapEls = { wrap, bar, zl, body, can, world, mini, panel, dr, chg };
+    mapBind(can, mini);
+    mapSize();
+    if (mapSel && !mapSelValid(mapSel)) mapSel = null;
+    for (const key of [...mapMulti]) { const [k, id] = keyParts(key); if (!mapSelValid({ k, id })) mapMulti.delete(key); }
+    if (MV) mapDraw(); else { mapLay = mapLayout(); mapBarState(); requestAnimationFrame(() => { mapSize(); mapFit(); }); }
+    mapPanel();
+  }
+  function mapBarState() {
+    const dr = mapEls.dr; if (!dr) return;
+    const d = doc.map && doc.map.draft, n = d ? draftCount(mapStruct()) : 0;
+    dr.hidden = !d;
+    if (d) mapEls.chg.textContent = "изменено: " + n;
+  }
+  // Карта — от строки вкладок до низа окна вместе с шапкой («Экспорт», ⓘ видны), страница не прокручивается
+  function mapSize() {
+    const w = mapEls.wrap; if (!w || !w.isConnected) return;
+    w.style.height = Math.max(320, Math.floor(window.innerHeight - (w.getBoundingClientRect().top + window.scrollY))) + "px";
+  }
+  function mapScrollIn() { window.scrollTo(0, 0); }
+  window.addEventListener("resize", () => { if (prefs.tab === MAP && mapEls.wrap) { mapSize(); mapApply(); } });
+  // После правки абзаца (пометки, комментарии): перерисовать карту и панель
+  function mapRefresh() { if (prefs.tab !== MAP || !mapEls.world) return; mapDraw(); mapPanel(); }
+
+  // ----- Выбор и панель -----
+  // Без выделения в панели — обзор; разделы концепции раскрываются здесь же: раздел → его абзацы → текст абзаца;
+  // «←» наверху — на уровень выше. Абзац из списка можно перетащить на канву.
+  function mapSelValid(sel) {
+    if (sel.k === "bl") return !!findBlock(sel.id);
+    if (sel.k === "ch" || sel.k === "cs") return !!findSection(sel.id);
+    if (sel.k === "ep") return !!(doc.map && doc.map.epochs.some(e => e.id === sel.id));
+    if (sel.k === "br") return !!(doc.map && (doc.map.branches || []).some(b => b.id === sel.id));
+    if (sel.k === "txt") return !!(doc.map && (doc.map.texts || []).some(t => t.id === sel.id));
+    return false;
+  }
+  function mapSelect(sel, focus) {
+    mapMulti = new Set();
+    if (sel && sel.k === "cs") { mapNav = { sec: sel.id }; sel = null; }
+    mapSel = sel;
+    if (sel && sel.k === "bl") curBlock = sel.id;
+    mapPaintSel();
+    mapPanel(focus);
+  }
+  function mpField(label, ctl) { const l = el("label", "mp-f"); l.append(el("span", "", label), ctl); return l; }
+  function mpList(items) {
+    const l = el("div", "mp-list");
+    for (const it of items) {
+      const b = btn("mp-li", null, it.fn);
+      b.append(el("span", "mp-li-t", it.label)); if (it.sub) b.append(el("span", "mp-li-s", it.sub));
+      l.append(b);
+    }
+    return l;
+  }
+  function mpConfirm(label, ask, fn) {
+    const b = btn("", label, () => {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = ask; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = label; } }, 3000); return; }
+      fn();
+    });
+    return b;
+  }
+  // «←» — на уровень выше
+  function mpBack(box, label, fn) { const b = btn("mp-back", "← " + label, fn); b.title = "На уровень выше"; box.append(b); }
+  function navTo(sel, nav) { mapNav = nav || { home: true }; if (sel) mapShow(sel); else mapSelect(null); }
+  function mapPanel(focus) {
+    const P = mapEls.panel; if (!P || !P.isConnected) return;
+    P.textContent = ""; mpCaret = null;
+    if (mapSel && !mapSelValid(mapSel)) mapSel = null;
+    const sel = mapSel, group = mapMulti.size > 1;
+    mapEls.body.classList.toggle("has-sel", !!sel || group || !!mapNav);
+    if (!sel && !group && !mapNav) mapEls.body.classList.remove("full");
+    const head = el("div", "mp-ph");
+    const grip = btn("mp-grip", null, () => mapEls.body.classList.toggle("full")); grip.setAttribute("aria-label", "Панель выше или ниже");
+    const x = btn("mp-x", "×", () => { mapNav = null; mapSelect(null); }); x.setAttribute("aria-label", "Закрыть панель");
+    head.append(grip, x); P.append(head);
+    const box = el("div", "mp-pb"); P.append(box);
+    if (group) mapPanelGroup(box);
+    else if (!sel) { if (mapNav && mapNav.sec && findSection(mapNav.sec)) mapPanelConcept(box, mapNav.sec); else { if (mapNav) mapNav = { home: true }; mapOverview(box); } }
+    else if (sel.k === "bl") mapPanelBlock(box, sel.id, focus);
+    else if (sel.k === "ch") mapPanelSection(box, sel.id);
+    else if (sel.k === "ep") mapPanelEpoch(box, sel.id);
+    else if (sel.k === "br") mapPanelBranch(box, sel.id);
+    else if (sel.k === "txt") mapPanelText(box, sel.id);
+    P.scrollTop = 0;
+    if (focus === "cm") { const h = P.querySelector(".mp-cmh"); if (h) h.scrollIntoView({ block: "start" }); }
+  }
+  function mapOverview(box) {
+    const st = mapStruct(), secs = st.chapters.map(c => c.s), conc = doc.parts.find(p => p.id === "concept");
+    const ab = st.chapters.reduce((a, c) => a + c.blocks.length, 0), zn = st.chapters.reduce((a, c) => a + c.blocks.reduce((q, b) => q + lenOf(b), 0), 0);
+    box.append(el("h3", "mp-h", "Книга"));
+    const eps = epochsNow(st);
+    box.append(el("p", "mp-stat", `эпох ${eps.length} · глав ${secs.length} · абзацев ${ab} · ${numFmt(zn)} знаков`));
+    box.append(mpList(eps.map(x => ({ label: x.e.title || "Эпоха", sub: `глав ${x.secs.length}`, fn: () => navTo({ k: "ep", id: x.e.id }) }))));
+    if (doc.map && doc.map.draft) box.append(el("p", "mp-stat", `Перестановок не сохранено: ${draftCount(st)}.`));
+    if (conc) {
+      box.append(el("h3", "mp-h", "Концепция"));
+      const all = conc.sections.reduce((a, s) => a + s.blocks.length, 0);
+      const placed = s => s.blocks.filter(b => mpos("b", b.id) || st.where.has(b.id)).length;
+      box.append(el("p", "mp-stat", `разделов ${conc.sections.length} · абзацев ${all} · на карте ${conc.sections.reduce((a, s) => a + placed(s), 0)}`));
+      box.append(mpList(conc.sections.map(s => ({ label: s.title || "Без названия", sub: (placed(s) ? `на карте ${placed(s)} · ` : "") + `абз. ${s.blocks.length}`, fn: () => { mapNav = { sec: s.id }; mapSelect(null); } }))));
+    }
+    const act = el("div", "mp-act");
+    act.append(mpConfirm("Разложить заново", "Разложить? Концепция уйдёт с карты", () => mapEdit((m, s2) => {
+      const att = new Set(); s2.chapters.forEach(c => c.blocks.forEach(b => att.add(b.id)));
+      for (const k of Object.keys(m.pos)) if (k.startsWith("b:") && !att.has(k.slice(2))) delete m.pos[k];
+      autoPlace(m, s2);
+    }, "Карта разложена заново")));
+    box.append(act);
+  }
+  // Раздел концепции в панели: его абзацы (тянуть на канву или нажать — текст)
+  function mapPanelConcept(box, sid) {
+    const f = findSection(sid); if (!f) return mapOverview(box);
+    const st = mapStruct(), s = f.s;
+    mpBack(box, "Обзор", () => navTo(null));
+    box.append(el("p", "mp-path", f.p.title));
+    box.append(el("h3", "mp-h", s.title || "Без названия"));
+    // в «С карты» — и абзацы книги, отвязанные на карте (уйдут сюда при сохранении)
+    const list = s.blocks.slice();
+    if (!s.key && s.title === FREE_SEC) for (const b of st.out) if (!list.includes(b)) list.push(b);
+    box.append(el("p", "mp-stat", `абзацев ${list.length} · ${numFmt(list.reduce((a, b) => a + lenOf(b), 0))} знаков`));
+    const l = el("div", "mp-list mp-clist");
+    list.forEach((b, i) => {
+      const where = st.where.get(b.id), pq = mpos("b", b.id), eps = epochsSorted();
+      const at = where ? "в главе" + (qOf(b) != null ? " (?)" : "") : pq && eps.length ? (eps[bandOf(eps, pq.y)].title || "Эпоха") : "";
+      const r = btn("mp-li mp-cli" + (where || pq ? " on" : ""), null, () => { if (r._dragged) return; mapNav = { sec: sid }; mapSelect({ k: "bl", id: b.id }); mapReveal(b.id); });
+      r.append(el("span", "mp-li-t", (i + 1) + ". " + labelOf(b, true)), el("span", "mp-li-s", (at ? at + " · " : "") + numFmt(lenOf(b))));
+      panelDragBind(r, b.id);
+      l.append(r);
+    });
+    box.append(l);
+    const act = el("div", "mp-act");
+    act.append(btn("", "Открыть в концепции", () => goTo({ p: f.p, s, b: null })));
+    box.append(act);
+  }
+  // Выделено несколько: что в группе
+  function mapPanelGroup(box) {
+    const items = [...mapMulti].map(keyParts);
+    const name = (k, id) => {
+      if (k === "bl") { const f = findBlock(id); return f ? labelOf(f.b, f.p.id !== "book") : "Абзац"; }
+      if (k === "ch") { const f = findSection(id); return "Глава: " + (f ? f.s.title || "Без названия" : ""); }
+      if (k === "txt") { const t = doc.map.texts.find(x => x.id === id); return "Подпись: " + short((t && t.text) || "пустая", 40); }
+      if (k === "br") { const b = doc.map.branches.find(x => x.id === id); return (b && b.title) || "Ветвь"; }
+      return id;
+    };
+    box.append(el("h3", "mp-h", "Выделено: " + items.length));
+    box.append(mpList(items.map(([k, id]) => ({ label: name(k, id), fn: () => mapShow({ k, id }) }))));
+    const act = el("div", "mp-act");
+    act.append(btn("", "Снять выделение", () => mapSelect(null)));
+    box.append(act);
+  }
+  function mapPanelBlock(box, bid, focus) {
+    const f = findBlock(bid); if (!f) return mapOverview(box);
+    const st = mapStruct(), { p, s, b } = f, concept = p.id !== "book";
+    const hs = st.where.get(b.id), hc = hs ? st.chapters.find(c => c.s.id === hs) : null, out = st.out.some(x => x.id === b.id);
+    // «←»: абзац концепции — к списку своего раздела, абзац книги — к своей главе
+    if (concept) mpBack(box, s.title || "Концепция", () => navTo(null, { sec: s.id }));
+    else mpBack(box, (hc ? hc.s : s).title || "Глава", () => navTo({ k: "ch", id: (hc ? hc.s : s).id }));
+    if (hc) {
+      const i = hc.blocks.indexOf(b), moved = hc.s !== s;
+      box.append(el("p", "mp-path", `Книга › ${hc.s.title || "Без названия"} · абзац ${i + 1}` + (moved ? " (после сохранения)" : "")));
+    } else box.append(el("p", "mp-path", `${p.title} › ${s.title || "Без названия"}` + (out ? " (отвязан)" : "")));
+    // место в книге: «под вопросом», утвердить, отвязать; у блока без линии — эпоха и «В эпоху…»
+    const q = qOf(b);
+    if (hc) {
+      const pl = el("div", "mp-q");
+      if (q != null) {
+        const qi = el("input"); qi.type = "text"; qi.maxLength = 200; qi.value = q; qi.placeholder = "подпись (необязательно)";
+        qi.addEventListener("beforeinput", () => maybeSnap());
+        qi.addEventListener("input", () => { setQ(doc.map, b.id, qi.value); touch(); mapDrawSoon(); });
+        qi.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); qi.blur(); } });
+        pl.append(mpField("Под вопросом", qi));
+        const a = el("div", "mp-act");
+        a.append(btn("", "Утвердить место", () => mapEdit(m => setQ(m, b.id, null), "Место утверждено")), btn("", "Отвязать", () => mapEdit((m, s2) => detachIn(m, s2, b.id), "Отвязано")));
+        pl.append(a);
+      } else {
+        const a = el("div", "mp-act");
+        a.append(btn("", "Под вопросом…", () => openQ("", cap => mapEdit(m => setQ(m, b.id, cap), "Под вопросом"))), btn("", "Отвязать", () => mapEdit((m, s2) => detachIn(m, s2, b.id), "Отвязано")));
+        pl.append(a);
+      }
+      box.append(pl);
+    } else {
+      const pq = mpos("b", b.id), eps = epochsSorted(), e = pq && eps.length ? eps[bandOf(eps, pq.y)] : null;
+      const a = el("div", "mp-act mp-ep-row");
+      a.append(el("span", "mp-stat", e ? "На карте · " + (e.title || "Эпоха") : "Не на карте"));
+      const eb = btn("", "В эпоху…", () => openPop(eb, eps.map(x => ({ label: x.title || "Эпоха", fn: () => mapEdit((m, s2) => { const sp = freeSpot(m, s2, x); setPos(m, "b", b.id, sp.x, sp.y); }, "Блок — в эпохе «" + short(x.title || "Эпоха", 30) + "»") }))));
+      a.append(eb);
+      if (pq) a.append(btn("", "Убрать с карты", () => mapEdit((m, s2) => unplace(m, s2, b.id), "Убрано с карты")));
+      box.append(a);
+    }
+    const sum = el("input"); sum.type = "text"; sum.maxLength = 120; sum.value = b.sum || "";
+    sum.placeholder = seedSum(b) || descLine(b.sum0) || autoLabel(b, concept);
+    sum.addEventListener("beforeinput", () => maybeSnap());
+    sum.addEventListener("input", () => { const v = descLine(sum.value); if (v) b.sum = v; else delete b.sum; touch(); mapDrawSoon(); });
+    sum.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); sum.blur(); } });
+    box.append(mpField("Кратко", sum));
+    const len = el("p", "mp-stat mp-blen", numFmt(lenOf(b)) + " знаков"); box.append(len);
+    let bt = null;
+    if (b.t === "p") {
+      box.append(mapTools());
+      const row = el("div", "row mp-row"); row.dataset.bid = b.id;
+      bt = el("div", "bt"); bt.innerHTML = b.html || ""; bt.contentEditable = "true"; bt.spellcheck = true;
+      row.append(bt); box.append(row);
+    } else if (b.t === "note") {
+      const ta = el("textarea", "mp-note"); ta.rows = 4; ta.value = b.text || ""; ta.setAttribute("aria-label", "Заметка");
+      ta.addEventListener("beforeinput", () => maybeSnap());
+      ta.addEventListener("input", () => { b.text = ta.value; touch(); len.textContent = numFmt(lenOf(b)) + " знаков"; mapDrawSoon(); });
+      box.append(mpField("Заметка", ta));
+    } else if (b.t === "img") {
+      if (images[b.img]) { const im = el("img", "mp-img"); im.src = images[b.img]; im.alt = b.cap || "Картинка"; im.addEventListener("click", () => openLightbox(images[b.img], b.cap)); box.append(im); }
+      const cap = el("input"); cap.type = "text"; cap.value = b.cap || ""; cap.placeholder = "Подпись к картинке";
+      cap.addEventListener("beforeinput", () => maybeSnap());
+      cap.addEventListener("input", () => { b.cap = cap.value; touch(); mapDrawSoon(); });
+      box.append(cap);
+    }
+    // Комментарии: целиком, текст можно выделить; «Копировать» и «В текст» — выделенную часть или весь
+    const cms = orderedComments(b);
+    box.append(el("h4", "mp-h4 mp-cmh", "Комментарии" + (cms.length ? " (" + cms.length + ")" : "")));
+    const list = el("div", "mp-cms");
+    for (const { c, anch } of cms) {
+      let quote = "", lg = null;
+      if (anch && bt) {
+        const sp = [...bt.querySelectorAll(".cm")].filter(q => q.dataset.c === c.id);
+        quote = sp.map(q => q.textContent).join(" ");
+        const m = sp.length && linkedMk(sp[0]); if (m) lg = m.dataset.g;
+      }
+      const cb = renderCallout(b, c, anch, quote, lg); cb.classList.add("mp-cm");
+      const ta = cb.querySelector("textarea");
+      const part = () => { const a = ta.selectionStart, z = ta.selectionEnd; return z > a ? ta.value.slice(a, z) : ta.value; };
+      const acts = el("div", "mp-cm-a");
+      const ins = btn("", "В текст", () => mapInsert(b.id, part())); ins.disabled = b.t !== "p";
+      acts.append(btn("", "Копировать", () => { const t = part(); if (t.trim()) copyText(t); }), ins);
+      cb.append(acts); list.append(cb);
+    }
+    box.append(list);
+    if (b.t === "p" && !cms.length) box.append(btn("", "+ Комментарий к абзацу", () => addBlockComment(b.id)));
+    const act = el("div", "mp-act");
+    act.append(btn("", concept ? "Открыть в концепции" : "Открыть в книге", () => goTo(f)));
+    box.append(act);
+    numberComments();
+    renderToolbarState();
+  }
+  // Кнопки пометок на панели — те же, что на панели книги
+  function mapTools() {
+    const t = el("div", "mp-tools");
+    for (const g of doc.groups) { const c = btn("chip js-sel", g.name, () => LINKED.includes(g.id) ? markWithComment(g.id) : applyGroup(g.id)); c.dataset.g = g.id; c.title = "Пометить выделенное: " + g.name; t.append(c); }
+    t.append(btn("js-sel", "Зачеркнуть", () => strike()), btn("js-sel", "Комментарий", () => addComment()), btn("js-sel", "Снять", () => clearMarks()), btn("js-undo", "Отменить", () => undo()));
+    // не терять выделение в тексте при нажатии
+    t.addEventListener("pointerdown", e => { if (e.target.closest("button")) { tbHold = Date.now(); e.preventDefault(); } });
+    return t;
+  }
+  // «В текст»: часть комментария (или весь) — туда, где стоял курсор в абзаце на панели, иначе в конец абзаца
+  function mapInsert(bid, text) {
+    text = String(text || "").trim(); if (!text) return;
+    const bt = document.querySelector(`.mp-panel .row[data-bid="${bid}"] .bt`), f = findBlock(bid); if (!bt || !f) return;
+    pushUndo();
+    let r = mpCaret && bt.contains(mpCaret.startContainer) ? mpCaret.cloneRange() : null;
+    if (r) {
+      // пробелы вокруг вставки — если их нет в тексте по краям
+      const pre = document.createRange(); pre.selectNodeContents(bt); pre.setEnd(r.startContainer, r.startOffset);
+      const post = document.createRange(); post.selectNodeContents(bt); post.setStart(r.endContainer, r.endOffset);
+      const before = pre.toString(), after = post.toString();
+      if (before && !/\s$/.test(before)) text = " " + text;
+      if (after && !/^[\s.,;:!?…»)]/.test(after)) text += " ";
+    }
+    else { r = document.createRange(); r.selectNodeContents(bt); r.collapse(false); if (bt.textContent && !/\s$/.test(bt.textContent)) text = " " + text; }
+    r.deleteContents(); r.insertNode(document.createTextNode(text)); tidy(bt);
+    f.b.html = cleanHTML(bt.innerHTML); touch(); mapRefresh(); toast("Вставлено в текст абзаца");
+  }
+  // Глава книги или раздел концепции
+  function mapPanelSection(box, sid) {
+    const f = findSection(sid); if (!f) return mapOverview(box);
+    const st = mapStruct(), s = f.s, book = f.p.id === "book", eps = book ? epochsNow(st) : [], ep = eps.find(x => x.secs.includes(s));
+    const hc = book ? st.chapters.find(c => c.s === s) : null, blocks = hc ? hc.blocks : s.blocks;
+    if (ep) mpBack(box, ep.e.title || "Эпоха", () => navTo({ k: "ep", id: ep.e.id })); else mpBack(box, "Обзор", () => navTo(null));
+    box.append(el("p", "mp-path", f.p.title + (ep ? " › " + (ep.e.title || "Эпоха") : "")));
+    if (book) {
+      const ti = el("input"); ti.type = "text"; ti.maxLength = 120; ti.value = s.title || ""; ti.placeholder = "Без названия";
+      ti.addEventListener("beforeinput", () => maybeSnap());
+      ti.addEventListener("input", () => { s.title = ti.value.replace(/\s+/g, " ").trim(); touch(); mapDrawSoon(); });
+      ti.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ti.blur(); } });
+      box.append(mpField("Название", ti));
+    } else box.append(el("h3", "mp-h", s.title || "Без названия"));
+    if (book) {
+      const d = el("textarea"); d.rows = 2; d.maxLength = 200; d.value = s.desc || ""; d.placeholder = short(defDesc(s), 140);
+      d.addEventListener("beforeinput", () => maybeSnap());
+      d.addEventListener("input", () => { const v = descLine(d.value); if (v) s.desc = v; else delete s.desc; touch(); });
+      d.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); d.blur(); } });
+      box.append(mpField("Краткое описание", d));
+    }
+    const ms = marksOf(blocks);
+    const line = el("p", "mp-stat"); line.append(`абзацев ${blocks.length} · ${numFmt(blocks.reduce((a, b) => a + lenOf(b), 0))} знаков · комментариев ${ms.c}`);
+    box.append(line);
+    if (Object.keys(ms.g).length) box.append(dotsEl(ms.g, true));
+    box.append(mpList(blocks.map((b, i) => ({ label: (i + 1) + ". " + labelOf(b, !book) + (qOf(b) != null ? " (?)" : ""), sub: numFmt(lenOf(b)), fn: () => mapShow({ k: "bl", id: b.id }) }))));
+    const act = el("div", "mp-act");
+    act.append(btn("", book ? "Открыть в книге" : "Открыть в концепции", () => goTo({ p: f.p, s, b: null })));
+    if (ep && ep.secs[0] !== s) act.append(btn("", "Начать здесь новую эпоху", () => epochSplit(s.id)));
+    box.append(act);
+  }
+  function mapPanelEpoch(box, eid) {
+    const st = mapStruct(), x = epochsNow(st).find(q => q.e.id === eid); if (!x) return mapOverview(box);
+    mpBack(box, "Обзор", () => navTo(null));
+    box.append(el("p", "mp-path", "Эпоха"));
+    const t = el("input"); t.type = "text"; t.maxLength = 80; t.value = x.e.title || "";
+    t.addEventListener("beforeinput", () => maybeSnap());
+    t.addEventListener("input", () => { const e = doc.map.epochs.find(q => q.id === eid); if (e) { e.title = t.value.replace(/\s+/g, " ").trim() || "Эпоха"; touch(); mapDrawSoon(); } });
+    t.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); t.blur(); } });
+    box.append(mpField("Название", t));
+    const bl = s => (st.chapters.find(c => c.s === s) || { blocks: s.blocks }).blocks;
+    box.append(el("p", "mp-stat", `глав ${x.secs.length} · абзацев ${x.secs.reduce((a, s) => a + bl(s).length, 0)} · ${numFmt(x.secs.reduce((a, s) => a + bl(s).reduce((q, b) => q + lenOf(b), 0), 0))} знаков`));
+    if (x.secs.length) box.append(mpList(x.secs.map(s => ({ label: s.title || "Без названия", sub: numFmt(bl(s).reduce((q, b) => q + lenOf(b), 0)), fn: () => mapShow({ k: "ch", id: s.id }) }))));
+    const brs = doc.map.branches.filter(b => b.epoch === eid);
+    if (brs.length) { box.append(el("h4", "mp-h4", "Ветви")); box.append(mpList(brs.map(b => ({ label: b.title || "Ветвь", fn: () => mapShow({ k: "br", id: b.id }) })))); }
+    // концепция, разложенная в эту эпоху (без линий)
+    const eps = epochsSorted(), cs = [];
+    for (const p of doc.parts) if (p.id !== "book") for (const s of p.sections) for (const b of s.blocks) { const q = !st.where.has(b.id) && mpos("b", b.id); if (q && eps[bandOf(eps, q.y)] === x.e) cs.push(b); }
+    if (cs.length) { box.append(el("h4", "mp-h4", "Концепция в этой эпохе")); box.append(mpList(cs.map(b => ({ label: labelOf(b, true), sub: numFmt(lenOf(b)), fn: () => mapShow({ k: "bl", id: b.id }) })))); }
+    const act = el("div", "mp-act");
+    act.append(btn("", "+ Глава", () => mapAddChapter(epochEnd(eid))), btn("", "+ Ветвь", () => branchAdd(eid)), btn("", "+ Эпоха после", () => epochAdd(eid)));
+    const del = mpConfirm("Удалить эпоху", "Удалить? Всё в ней — в эпоху выше", () => epochDelete(eid));
+    del.disabled = doc.map.epochs.length <= 1;
+    act.append(del); box.append(act);
+  }
+  function mapPanelBranch(box, id) {
+    const br = ((doc.map && doc.map.branches) || []).find(b => b.id === id); if (!br) return mapOverview(box);
+    const ep = doc.map.epochs.find(e => e.id === br.epoch);
+    if (ep) mpBack(box, ep.title || "Эпоха", () => navTo({ k: "ep", id: ep.id })); else mpBack(box, "Обзор", () => navTo(null));
+    box.append(el("p", "mp-path", "Ветвь сюжета" + (ep ? " · " + (ep.title || "Эпоха") : "")));
+    const t = el("input"); t.type = "text"; t.maxLength = 80; t.value = br.title || "";
+    t.addEventListener("beforeinput", () => maybeSnap());
+    t.addEventListener("input", () => { br.title = t.value.replace(/\s+/g, " ").trim() || "Ветвь"; touch(); mapDrawSoon(); });
+    t.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); t.blur(); } });
+    box.append(mpField("Название", t));
+    const act = el("div", "mp-act");
+    act.append(mpConfirm("Удалить ветвь", "Точно удалить?", () => branchDelete(id)));
+    box.append(act);
+  }
+  // Серая подпись на поле: свой текст (подписать эпоху, записать мысль)
+  function mapPanelText(box, id) {
+    const t = ((doc.map && doc.map.texts) || []).find(x => x.id === id); if (!t) return mapOverview(box);
+    const p = mpos("t", id), eps = epochsSorted(), e = p && eps.length ? eps[bandOf(eps, p.y)] : null;
+    mpBack(box, "Обзор", () => navTo(null));
+    box.append(el("p", "mp-path", "Подпись на карте" + (e ? " · " + (e.title || "Эпоха") : "")));
+    const ta = el("textarea", "mp-note"); ta.rows = 4; ta.maxLength = 2000; ta.value = t.text || ""; ta.setAttribute("aria-label", "Текст подписи");
+    ta.addEventListener("beforeinput", () => maybeSnap());
+    ta.addEventListener("input", () => { t.text = ta.value; touch(); mapDrawSoon(); });
+    box.append(mpField("Текст", ta));
+    const act = el("div", "mp-act");
+    act.append(mpConfirm("Удалить подпись", "Точно удалить?", () => mapEdit(m => { m.texts = m.texts.filter(x => x.id !== id); mapSel = null; }, "Подпись удалена")));
+    box.append(act);
+  }
 
   // ---------- Панель: не терять выделение при нажатии ----------
   $("#tb").addEventListener("pointerdown", e => {
