@@ -157,11 +157,16 @@ input[type="text"], textarea { font: inherit; color: var(--fg); background: var(
 .editing .sec-title { box-shadow: inset 0 0 0 1px var(--line); border-radius: 4px; padding-inline: 8px; }
 .editing .sec-title:focus { box-shadow: inset 0 0 0 2px var(--accent); }
 .row { position: relative; padding-block: 3px; scroll-margin-top: 140px; border-radius: 6px; }
+.row.block-dragging { opacity: .4; }
+.row.block-drop-before { box-shadow: 0 -2px 0 var(--accent); }
+.row.block-drop-after { box-shadow: 0 2px 0 var(--accent); }
 /* Ленточка закладки — на поле слева от «⋯», чтобы не мешать тексту и кнопке */
 .bmk { position: absolute; left: -13px; top: 7px; width: 10px; height: 16px; color: var(--accent); pointer-events: none; }
 .bmk svg { display: block; width: 10px; height: 16px; }
 .hd { border: 0; background: none; padding: 0; width: 28px; height: 28px; min-height: 28px; color: var(--muted); font-size: 18px; line-height: 1; opacity: .5; border-radius: 6px; }
 .hd:hover:not(:disabled) { background: var(--surface); }
+.row > .hd { touch-action: none; cursor: grab; opacity: .8; user-select: none; -webkit-user-select: none; }
+.row > .hd:active { cursor: grabbing; }
 .row:hover .hd, .row.cur .hd, .sec-head:hover .hd { opacity: 1; }
 .row.cur .hd { color: var(--accent); }
 @media (hover: none) { .hd { opacity: .8; } }
@@ -460,6 +465,15 @@ button.mp-path { color: var(--accent); }
   .toast { transition: none; }
   .flash { animation: none; outline: 2px solid var(--accent); }
 }
+
+/* Связи книги и концепции — задача 19. */
+.bt.inl{display:inline}.krefs{display:inline;margin-left:4px}.kref{font:12px var(--font-ui);color:var(--accent);min-height:26px;padding:0 4px;vertical-align:super;margin-left:3px}
+.ln-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}.ln-chip,.ln-status{font-size:12px;min-height:30px;padding:4px 8px}.ln-chip{color:var(--accent)}.ln-status{background:var(--surface)}
+.ln-section,.ln-sources{margin:8px 0 16px 34px;font-size:13px}.ln-sources{border-top:1px solid var(--line);padding-top:10px}.ln-sources h3{font-size:15px}.ln-source{display:block;text-align:left;color:var(--accent);border:0;padding:5px 0;min-height:30px}.sec.folded .ln-sources,.sec.folded .ln-section{display:none}
+.ln-return{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:45;box-shadow:0 3px 14px var(--shadow);background:var(--bg);color:var(--accent)}
+.ln-box{gap:8px;padding:12px 14px;max-width:620px}.ln-dialog{font-size:14px}.ln-dialog h4{font-size:14px;margin:12px 0 6px}.ln-context{color:var(--muted);font-size:12px}.ln-dialog .ln-preview{font:16px/1.45 var(--font-text);margin:4px 0 6px;overflow-wrap:anywhere}.ln-entry{padding:8px 0;border-bottom:1px solid var(--line)}.ln-field{display:block;font-size:13px;margin-top:7px}.ln-box select{margin-top:3px;min-height:34px;padding:5px 8px}.ln-box .ln-chips select{width:auto;max-width:100%}.ln-excluded{display:flex;gap:7px;align-items:center;margin-top:12px}.ln-excluded input{width:18px;height:18px}.ln-error{color:var(--danger)}.ln-panel{margin-bottom:8px}.ln-map-status{color:var(--accent);max-width:125px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+@media(max-width:560px){.ln-box button,.ln-box select{min-height:38px}.ln-section,.ln-sources{margin-left:22px}.ln-map-status{max-width:100px}}
+
 </style>
 <style id="gstyle"></style>
 <script>
@@ -490,6 +504,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 </div>
 <div class="top">
   <div class="wrap tabsrow">
+    <div id="bookbar" style="display:flex;gap:8px;align-items:center;padding:8px 12px;overflow:auto"></div>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
     <button id="bm-btn" type="button" aria-haspopup="menu" aria-label="Закладки" title="Закладки и разделы"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg><span class="lbl">Закладки</span></button>
     <button id="more" type="button" aria-haspopup="menu" aria-label="Ещё" title="Ещё">⋯</button>
@@ -574,9 +589,216 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function hashStr(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36); }
   // Версия главы — без кратких подписей абзацев (задача 16): новая подпись от Claude не делает главу изменённой.
   // Абзац без комментариев с одной подписью — та же строка, что и без подписи (так его пишет tools\tekst.py).
+  // Связи книги и концепции: отдельный слой, не меняющий версию текста.
+  const LN_ID = /^[\w-]{1,40}$/;
+  const LN_KEYS = ["a", "nb", "ln"];
+  const LN_GLYPH = { full: "✓", partial: "◐", none: "○", excluded: "—" };
+  let LX = null;
+  function lnNorm(list) {
+    const m = new Map();
+    for (const r of Array.isArray(list) ? list : []) {
+      if (!r || !LN_ID.test(String(r.a || ""))) continue;
+      const a = String(r.a), partial = !!r.p;
+      m.set(a, m.has(a) ? m.get(a) && partial : partial);
+    }
+    return [...m].map(([a, p]) => p ? { a, p: 1 } : { a });
+  }
+  function lnLayer(b) {
+    const o = {};
+    if (LN_ID.test(String(b.a || ""))) o.a = String(b.a);
+    if (typeof b.nb === "boolean") o.nb = b.nb;
+    if (Array.isArray(b.ln)) o.ln = lnNorm(b.ln);
+    return o;
+  }
+  function lnKey(b) { return (b.t || "p") + ":" + blockText(b); }
+  function lnFromSeed(items) {
+    let changed = false;
+    if (!doc.seedLn) doc.seedLn = {};
+    const alias = new Map(), pending = [];
+    for (const it of items) {
+      const hash = hashStr(JSON.stringify(it.e.blocks.map(x => typeof x === "object" ? lnLayer(x) : {})));
+      if (doc.seedLn[it.e.key] === hash) continue;
+      const f = seedSecOf(it.e.key); if (!f) continue;
+      const pool = new Map();
+      for (const b of f.s.blocks) { const k = lnKey(b); if (!pool.has(k)) pool.set(k, []); pool.get(k).push(b); }
+      for (const raw of it.e.blocks) {
+        const seed = typeof raw === "string" ? { t: "p", html: raw } : raw;
+        const match = pool.get(lnKey(seed)), b = match && match.shift();
+        if (!b) continue;
+        const layer = lnLayer(seed);
+        if (layer.a) { if (b.a && b.a !== layer.a) alias.set(layer.a, b.a); else if (!b.a) { b.a = layer.a; changed = true; } }
+        if (typeof layer.nb === "boolean" && typeof b.nb !== "boolean") { b.nb = layer.nb; changed = true; }
+        if (layer.ln) pending.push([b, layer.ln]);
+      }
+      doc.seedLn[it.e.key] = hash; changed = true;
+    }
+    const resolve = a => { const seen = new Set(); while (alias.has(a) && !seen.has(a)) { seen.add(a); a = alias.get(a); } return a; };
+    // Алиасы применяются ко всем ссылкам, включая уже сохранённые и ссылки из других глав.
+    for (const p of doc.parts) for (const s of p.sections) for (const b of s.blocks) if (b.ln) {
+      const next = lnNorm(b.ln.map(r => ({ ...r, a: resolve(r.a) })));
+      if (JSON.stringify(next) !== JSON.stringify(b.ln)) { b.ln = next; changed = true; }
+    }
+    for (const [b, list] of pending) {
+      const next = lnNorm([...(b.ln || []), ...list.map(r => ({ ...r, a: resolve(r.a) }))]);
+      if (JSON.stringify(next) !== JSON.stringify(b.ln)) { b.ln = next; changed = true; }
+    }
+    if (changed) LX = null;
+    return changed;
+  }
+  function lnPreserve(old, fresh) {
+    const pool = new Map();
+    for (const b of old) { const k = lnKey(b); if (!pool.has(k)) pool.set(k, []); pool.get(k).push(b); }
+    for (const b of fresh) {
+      const list = pool.get(lnKey(b)), prev = list && list.shift();
+      if (!prev) continue;
+      // При явной замене текста собственные связи и исключение имеют приоритет.
+      Object.assign(b, lnLayer(prev));
+    }
+  }
+  function lx() {
+    if (LX) return LX;
+    const byA = new Map(), refs = new Map(), num = new Map();
+    for (const p of doc.parts) for (const s of p.sections) s.blocks.forEach((b, i) => {
+      if (p.id === "concept" && b.a && !byA.has(b.a)) byA.set(b.a, { p, s, b, i });
+    });
+    for (const p of doc.parts) if (p.id === "book") for (const s of p.sections) {
+      const ns = new Map(); num.set(s.id, ns);
+      s.blocks.forEach((b, i) => { for (const r of lnNorm(b.ln)) {
+        if (!ns.has(r.a)) ns.set(r.a, ns.size + 1);
+        if (!refs.has(r.a)) refs.set(r.a, []);
+        refs.get(r.a).push({ p, s, b, i, partial: !!r.p });
+      } });
+    }
+    return LX = { byA, refs, num };
+  }
+  function lnStatus(b) {
+    const refs = lx().refs.get(b.a) || [];
+    if (refs.length) return refs.some(r => !r.partial) ? "full" : "partial";
+    return b.nb ? "excluded" : "none";
+  }
+  function lnStatusText(b, s) {
+    const k = lnStatus(b), question = /открытые вопросы/i.test(s.title);
+    const labels = question ? { full: "Решено в книге", partial: "Частично", none: "Не решено", excluded: "Не для книги" }
+      : { full: "В книге", partial: "Частично", none: "Не в книге", excluded: "Не для книги" };
+    return LN_GLYPH[k] + " " + labels[k];
+  }
+  function lnStats(sections) {
+    const n = { full: 0, partial: 0, none: 0, excluded: 0 };
+    for (const s of sections) for (const b of s.blocks) n[lnStatus(b)]++;
+    return `✓ в книге ${n.full} из ${n.full + n.partial + n.none} · ◐ частично ${n.partial} · ○ не в книге ${n.none} · — не для книги ${n.excluded}`;
+  }
+  function lnNavigate(f) {
+    if (!f) { toast("Абзац концепции удалён"); return; }
+    if (f.p.id === "concept") { if (prefs.lnf) delete prefs.lnf[f.s.id]; savePrefs(); }
+    // Фильтр мог скрывать цель на уже открытой вкладке.
+    if (prefs.tab === f.p.id) renderView(true);
+    goTo(f);
+    document.getElementById("ln-return")?.remove();
+    const back = btn("ln-return", "← Вернуться", () => { back.remove(); goBack(); });
+    back.id = "ln-return"; document.body.append(back); setTimeout(() => back.remove(), 9000);
+  }
+  function lnRow(main, s, b, inline) {
+    const f = findBlock(b.id); if (!f || !["book", "concept"].includes(f.p.id)) return;
+    if (f.p.id === "book") {
+      const links = lnNorm(b.ln); if (!links.length) return;
+      const box = el("span", "krefs");
+      if (inline) main.querySelector(".bt")?.classList.add("inl");
+      for (const r of links) {
+        const to = lx().byA.get(r.a), n = lx().num.get(s.id)?.get(r.a);
+        const button = btn("kref", "к" + n, () => lnNavigate(lx().byA.get(r.a)));
+        button.title = to ? to.s.title + " › " + labelOf(to.b, true) + (r.p ? " · частично" : "") : "Абзац концепции удалён";
+        box.append(button);
+      }
+      main.append(box);
+    } else {
+      const box = el("div", "ln-chips");
+      box.append(btn("ln-status", lnStatusText(b, s), () => openLinks(b.id)));
+      for (const to of lx().refs.get(b.a) || []) box.append(btn("ln-chip", to.s.title + ", абз. " + (to.i + 1) + (to.partial ? " · частично" : ""), () => lnNavigate(findBlock(to.b.id))));
+      main.append(box);
+    }
+  }
+  function lnSection(sec, p, s) {
+    if (p.id === "concept") {
+      const box = el("div", "ln-section"), filters = el("div", "ln-chips");
+      box.append(el("div", "muted", lnStats([s])));
+      const current = prefs.lnf?.[s.id] || "all";
+      for (const [id, name] of [["all", "Все"], ["none", "Не в книге"], ["full", "В книге"], ["partial", "Частично"], ["excluded", "Не для книги"]]) {
+        const b = btn("ln-chip", name, () => { if (!prefs.lnf) prefs.lnf = {}; prefs.lnf[s.id] = id; savePrefs(); renderView(true); });
+        b.setAttribute("aria-pressed", String(current === id)); filters.append(b);
+      }
+      box.append(filters); sec.querySelector(".sec-head").after(box);
+      for (const b of s.blocks) { const row = sec.querySelector(`.row[data-bid="${b.id}"]`); if (row) row.hidden = current !== "all" && lnStatus(b) !== current; }
+    }
+    if (p.id !== "book") return;
+    const nums = lx().num.get(s.id); if (!nums?.size) return;
+    const box = el("div", "ln-sources"); box.append(el("h3", "", "Из концепции"));
+    for (const [a, n] of nums) {
+      const f = lx().byA.get(a), refs = (lx().refs.get(a) || []).filter(r => r.s.id === s.id);
+      box.append(btn("ln-source", "к" + n + " · " + (f ? f.s.title + " › " + labelOf(f.b, true) : "Абзац концепции удалён") + (refs.every(r => r.partial) ? " · частично" : ""), () => lnNavigate(lx().byA.get(a))));
+    }
+    sec.append(box);
+  }
+  function lnChanged() { touch(); renderView(true); }
+  function lnAnchor(b) { if (!b.a) b.a = newId("a"); return b.a; }
+  function openLinks(bid) {
+    const f = findBlock(bid); if (!f || !["book", "concept"].includes(f.p.id)) return;
+    const concept = f.p.id === "concept", body = el("div", "ln-dialog");
+    body.append(el("div", "ln-context", f.p.title + " · " + f.s.title), el("p", "ln-preview", blockText(f.b)));
+    body.append(el("h4", "", "Связанные абзацы"));
+    const existing = concept ? (lx().refs.get(f.b.a) || []).map(r => ({ a: f.b.a, book: r.b, other: r, p: r.partial }))
+      : lnNorm(f.b.ln).map(r => ({ a: r.a, book: f.b, other: lx().byA.get(r.a), p: !!r.p }));
+    const change = fn => { pushUndo(); fn(); lnChanged(); openLinks(bid); };
+    if (!existing.length) body.append(el("p", "muted", "Связей пока нет"));
+    for (const r of existing) {
+      const row = el("div", "ln-entry");
+      row.append(el("b", "", r.other ? r.other.s.title + ", абз. " + (r.other.i + 1) : "Абзац концепции удалён"));
+      if (r.other) row.append(el("p", "ln-preview", blockText(r.other.b)));
+      const actions = el("div", "ln-chips"), coverage = lnCoverage(r.p);
+      coverage.setAttribute("aria-label", "Использование: " + (r.other?.s.title || "удалённый абзац"));
+      coverage.addEventListener("change", () => change(() => { r.book.ln = lnNorm(r.book.ln).map(x => x.a === r.a ? (coverage.value === "partial" ? { a: r.a, p: 1 } : { a: r.a }) : x); }));
+      actions.append(coverage, btn("", "Удалить связь", () => change(() => { r.book.ln = lnNorm(r.book.ln).filter(x => x.a !== r.a); })));
+      row.append(actions); body.append(row);
+    }
+    if (!(concept && f.b.nb && !existing.length)) {
+      const target = doc.parts.find(p => p.id === (concept ? "book" : "concept"));
+      body.append(el("h4", "", "Добавить связь"));
+      const sections = el("select"), blocks = el("select"), preview = el("p", "ln-preview"), coverage = lnCoverage(true), error = el("p", "ln-error");
+      const field = (name, control) => { const label = el("label", "ln-field", name); label.append(control); return label; };
+      for (const s of target?.sections || []) if (s.blocks.length) { const o = el("option", "", s.title || "Без названия"); o.value = s.id; sections.append(o); }
+      function fill() {
+        blocks.textContent = "";
+        const s = target?.sections.find(x => x.id === sections.value);
+        for (const [i, b] of (s?.blocks || []).entries()) { const o = el("option", "", "Абзац " + (i + 1) + " · " + short(blockText(b), 65)); o.value = b.id; blocks.append(o); }
+        show();
+      }
+      function show() { const b = findBlock(blocks.value); preview.textContent = b ? blockText(b.b) : "Нет абзацев для связи"; error.textContent = ""; }
+      sections.addEventListener("change", fill); blocks.addEventListener("change", show); fill();
+      const add = btn("primary", "Связать", () => {
+        const other = findBlock(blocks.value); if (!other) { error.textContent = "Выберите абзац"; return; }
+        const c = concept ? f.b : other.b, b = concept ? other.b : f.b;
+        if (c.a && lnNorm(b.ln).some(r => r.a === c.a)) { error.textContent = "Этот абзац уже связан. Измените использование в списке выше."; return; }
+        change(() => { const a = lnAnchor(c); c.nb = false; b.ln = [...lnNorm(b.ln), coverage.value === "partial" ? { a, p: 1 } : { a }]; });
+      });
+      add.disabled = !sections.options.length;
+      const controls = el("div", "ln-chips"); controls.append(field("Использование", coverage), add);
+      body.append(field(concept ? "Глава книги" : "Раздел концепции", sections), field("Абзац", blocks), preview, controls, error);
+    }
+    if (concept) {
+      const label = el("label", "ln-excluded"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!f.b.nb; cb.disabled = existing.length > 0;
+      if (cb.disabled) label.title = "Сначала удалите существующие связи";
+      cb.addEventListener("change", () => change(() => { f.b.nb = cb.checked; }));
+      label.append(cb, el("span", "", "Не для книги")); body.append(label);
+    }
+    openModal(concept ? "Связь с книгой" : "Связь с концепцией", body, [{ label: "Готово", primary: true }]);
+    modal.querySelector(".mbox").classList.add("ln-box");
+  }
+  function lnCoverage(partial) {
+    const s = el("select"); for (const [value, label] of [["full", "Полностью"], ["partial", "Частично"]]) { const o = el("option", "", label); o.value = value; s.append(o); } s.value = partial ? "partial" : "full"; return s;
+  }
+
   function seedPlain(x) {
-    if (!x || typeof x !== "object" || !("sum" in x)) return x;
-    const o = { ...x }; delete o.sum;
+    if (!x || typeof x !== "object") return x;
+    const o = { ...x }; delete o.sum; for (const k of LN_KEYS) delete o[k];
     return Object.keys(o).length === 1 && "html" in o ? o.html : o;
   }
   function seedItem(pid, e) { return { pid, e, h: hashStr(JSON.stringify([e.title, e.blocks.map(seedPlain)])) }; }
@@ -593,6 +815,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         if (o.t === "note") o.text = b.text || "";
         if (o.t === "img") { o.img = b.img || ""; o.cap = b.cap || ""; }
         if (typeof b.q === "string") o.q = b.q;
+        Object.assign(o, lnLayer(b));
         return o;
       })
     };
@@ -656,6 +879,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       L.push("");
       // своя краткая подпись абзаца (задача 16) — в «Тексте для Claude»; в сравнение глав (canonText) не входит
       if (opts.head !== false && descLine(b.sum)) L.push("<!-- кратко: " + descLine(b.sum).replace(/-{2,}/g, "—").slice(0, 200) + " -->");
+      if (opts.head !== false) {
+        const layer = lnLayer(b);
+        if (layer.a) L.push("<!-- якорь: " + layer.a + " -->");
+        if (layer.nb === true) L.push("<!-- не для книги -->");
+        if (layer.ln && layer.ln.length) L.push("<!-- концепция: " + layer.ln.map(r => r.a + (r.p ? " частично" : "")).join(", ") + " -->");
+      }
       // абзац «под вопросом» (задача 16) — часть главы: входит и в сравнение глав
       if (typeof b.q === "string") { const q = descLine(b.q).replace(/-{2,}/g, "—").slice(0, 200); L.push(q ? "<!-- под вопросом: " + q + " -->" : "<!-- под вопросом -->"); }
       L.push(...lines);
@@ -682,9 +911,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   // считаются загруженными полностью: их главы ничем не заменяются. В телефонной версии текста от Claude нет.
   function prepSeed() {
     seedPending = [];
-    const items = SITE ? [] : seedEntries();
+    const items = SITE || doc.independent ? [] : seedEntries();
     if (!items.length) return;
-    let changed = false;
+    let changed = lnFromSeed(items);
     if (!doc.seedSeen || typeof doc.seedSeen !== "object") {
       doc.seedSeen = {};
       for (const it of items) { const f = seedSecOf(it.e.key); if (f) { f.s.key = it.e.key; doc.seedSeen[it.e.key] = { h: it.h, t: hashStr(canonText(f.s)) }; } }
@@ -706,7 +935,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const order = seedEntries();
     for (const { it } of list) {
       const k = it.e.key, ns = seedSection(it), f = seedSecOf(k);
-      if (f) { f.s.title = ns.title; f.s.blocks = ns.blocks; f.s.key = k; }
+      if (f) { lnPreserve(f.s.blocks, ns.blocks); f.s.title = ns.title; f.s.blocks = ns.blocks; f.s.key = k; }
       else {
         let part = doc.parts.find(p => p.id === it.pid);
         if (!part) { part = { id: it.pid, title: it.pid === "book" ? "Книга" : "Концепция", head: null, sections: [] }; doc.parts.push(part); }
@@ -720,6 +949,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       }
       doc.seedSeen[k] = { h: it.h, t: hashStr(canonText(ns)) };
     }
+    doc.seedLn = {}; lnFromSeed(order);
     doc.seedVersion = SEED_VERSION;
     touch(); undoStack = []; renderAll();
     toast(list.length === 1 ? "Загружено: «" + short(list[0].title, 40) + "»" : "Загружено разделов: " + list.length);
@@ -747,6 +977,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   let doc = buildSeed();
   const images = {};
   let prefs = { tab: "book", device: guessDevice(), syncedAt: null };
+  let catalog = { active: "main", books: [{ id: "main", title: "Книга Тишины" }] };
   let storageOK = true;
   let edit = false;
   let curBlock = null;
@@ -820,39 +1051,57 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     };
   })();
   const store = LOCAL ? httpStore : idbStore;
+  function bookKey(id, key) { return id === "main" ? key : "book:" + id + ":" + key; }
+  function emptyBook(title) {
+    return { app: APP, format: FORMAT, title, independent: true, updatedAt: null, updatedOn: "",
+      groups: DEFAULT_GROUPS.map(g => fixGroup({ ...g })), bm: [], parts: [
+        { id: "book", title: "Книга", head: { title, sub: "" }, sections: [{ id: newId("s"), title: "Новая глава", blocks: [] }] },
+        { id: "concept", title: "Концепция", sections: [] },
+        { id: "mat", title: "Материалы", sections: [] }
+      ] };
+  }
+  function fallbackKey(key) { return catalog.active === "main" ? "kt-" + key : "kt-" + catalog.active + "-" + key; }
 
   let saveTimer = null;
-  function touch() { doc.updatedAt = nowISO(); doc.updatedOn = prefs.device; scheduleSave(); renderStatus(); }
+  function touch() { LX = null; doc.updatedAt = nowISO(); doc.updatedOn = prefs.device; scheduleSave(); renderStatus(); }
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 500); }
   async function saveNow() {
     clearTimeout(saveTimer); saveTimer = null;
-    try { await store.set("doc", doc); storageOK = true; }
-    catch (e) { storageOK = false; try { localStorage.setItem("kt-doc", JSON.stringify(doc)); } catch (e2) { } }
+    try { await store.set(bookKey(catalog.active, "doc"), doc); storageOK = true; }
+    catch (e) { storageOK = false; try { localStorage.setItem(fallbackKey("doc"), JSON.stringify(doc)); } catch (e2) { } }
     renderStatus();
   }
   async function saveImage(id, data) { images[id] = data; try { await store.set("img:" + id, data); } catch (e) { } }
-  function savePrefs() { store.set("prefs", prefs).catch(() => { try { localStorage.setItem("kt-prefs", JSON.stringify(prefs)); } catch (e) { } }); }
+  function savePrefs() { return store.set(bookKey(catalog.active, "prefs"), prefs).catch(() => { try { localStorage.setItem(fallbackKey("prefs"), JSON.stringify(prefs)); } catch (e) { } }); }
   function usedImageIds(d) { const s = new Set(); for (const p of d.parts || []) for (const sec of p.sections || []) for (const b of sec.blocks || []) if (b.t === "img" && b.img) s.add(b.img); return s; }
 
   async function load() {
     try {
-      const p = await store.get("prefs");
+      const c = await store.get("catalog");
+      if (c && Array.isArray(c.books) && c.books.length) catalog = c;
+      if (!catalog.books.some(b => b.id === catalog.active)) catalog.active = catalog.books[0].id;
+      if (catalog.active !== "main") doc = emptyBook(catalog.books.find(b => b.id === catalog.active).title);
+      const p = await store.get(bookKey(catalog.active, "prefs"));
       if (p && typeof p === "object") prefs = { ...prefs, ...p };
-      const d = await store.get("doc");
+      const d = await store.get(bookKey(catalog.active, "doc"));
       if (d && d.app === APP && Array.isArray(d.parts)) {
         doc = normalizeDoc(d);
         for (const id of usedImageIds(doc)) { const v = await store.get("img:" + id); if (v) images[id] = v; }
       }
       storageOK = true;
+      const entry = catalog.books.find(b => b.id === catalog.active);
+      if (entry) entry.title = doc.title || entry.title;
+      await store.set("catalog", catalog);
     } catch (e) {
       storageOK = false;
-      try { const raw = localStorage.getItem("kt-doc"); if (raw) { const d = JSON.parse(raw); if (d && d.app === APP) doc = normalizeDoc(d); } } catch (e2) { }
-      try { const raw = localStorage.getItem("kt-prefs"); if (raw) prefs = { ...prefs, ...JSON.parse(raw) }; } catch (e3) { }
+      try { const raw = localStorage.getItem(fallbackKey("doc")); if (raw) { const d = JSON.parse(raw); if (d && d.app === APP) doc = normalizeDoc(d); } } catch (e2) { }
+      try { const raw = localStorage.getItem(fallbackKey("prefs")); if (raw) prefs = { ...prefs, ...JSON.parse(raw) }; } catch (e3) { }
     }
     if (prefs.tab !== SUM && prefs.tab !== MAP && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = doc.parts[0] ? doc.parts[0].id : SUM;
     posLast = JSON.stringify(prefs.pos || {});
     posReady = true;
     renderAll();
+    renderBookbar();
     gcImages();
   }
   async function gcImages() {
@@ -861,6 +1110,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       const used = usedImageIds(doc);
       const bk = await store.get("backup");
       if (bk && bk.doc) usedImageIds(bk.doc).forEach(i => used.add(i));
+      for (const key of keys) {
+        if (typeof key !== "string" || !/^book:[\w-]+:(doc|backup)$/.test(key)) continue;
+        const value = await store.get(key);
+        if (value) usedImageIds(value.doc || value).forEach(i => used.add(i));
+      }
+      const main = await store.get("doc");
+      if (main) usedImageIds(main).forEach(i => used.add(i));
       for (const k of keys) if (typeof k === "string" && k.startsWith("img:") && !used.has(k.slice(4))) await store.del(k);
     } catch (e) { }
   }
@@ -943,6 +1199,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
             if (descLine(b.sum0)) o.sum0 = descLine(b.sum0).slice(0, 200);
             // абзац «под вопросом» (задача 16): место в книге ещё не решено; q — подпись (может быть пустой)
             if (typeof b.q === "string") o.q = descLine(b.q).slice(0, 200);
+            Object.assign(o, lnLayer(b));
             return o;
           })
         }))
@@ -950,6 +1207,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       // Карта (задача 16): эпохи, ветви, подписи, места на поле, черновик перестановок (см. «Карта» ниже)
       map: normMap(d.map),
       // Какие версии глав от Claude уже загружены; нет — значит, данные старше задачи 11 (см. prepSeed)
+      independent: d.independent === true,
+      seedLn: d.seedLn && typeof d.seedLn === "object" && !Array.isArray(d.seedLn)
+        ? Object.fromEntries(Object.entries(d.seedLn).filter(([k, v]) => /^[\w-]+$/.test(k) && typeof v === "string")) : undefined,
       seedSeen: d.seedSeen && typeof d.seedSeen === "object" && !Array.isArray(d.seedSeen)
         ? Object.fromEntries(Object.entries(d.seedSeen).filter(([k, v]) => /^[\w-]+$/.test(k) && v && typeof v === "object")
           .map(([k, v]) => [k, { h: String(v.h || ""), t: String(v.t || "") }]))
@@ -1106,6 +1366,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 
   // ---------- Отрисовка ----------
   function renderAll() {
+    LX = null;
+    renderBookbar();
     prepSeed();
     reanchorBm();
     applyGroupStyles(); renderTabs(); renderToolbar(); renderView(); renderStatus(); checkBanners();
@@ -1170,6 +1432,71 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     m.setAttribute("aria-label", "Карта"); m.title = "Карта";
     if (prefs.tab === MAP) m.setAttribute("aria-current", "page");
     t.append(m);
+  }
+  let bookBusy = false;
+  function renderBookbar() {
+    const bar = document.getElementById("bookbar");
+    if (!bar || !LOCAL) { if (bar) bar.hidden = true; return; }
+    bar.hidden = false; bar.textContent = "";
+    const label = el("span", "", "Книга:"); bar.append(label);
+    const select = document.createElement("select");
+    for (const b of catalog.books) { const o = document.createElement("option"); o.value = b.id; o.textContent = b.title; select.append(o); }
+    select.value = catalog.active;
+    select.disabled = bookBusy;
+    select.addEventListener("change", () => switchBook(select.value)); bar.append(select);
+    const add = btn("", "+ Новая книга", createBook); add.disabled = bookBusy; bar.append(add);
+  }
+  async function switchBook(id) {
+    if (bookBusy || id === catalog.active || !catalog.books.some(b => b.id === id)) return;
+    bookBusy = true; renderBookbar();
+    try {
+      savePos(); await savePrefs();
+      clearTimeout(saveTimer); saveTimer = null;
+      await store.set(bookKey(catalog.active, "doc"), doc);
+      const d = await store.get(bookKey(id, "doc"));
+      if (!d || d.app !== APP || !Array.isArray(d.parts)) throw new Error("Нет данных книги");
+      const nextDoc = normalizeDoc(d), p = await store.get(bookKey(id, "prefs"));
+      const nextCatalog = { ...catalog, active: id, books: catalog.books.map(b => b.id === catalog.active ? { ...b, title: doc.title || b.title } : b) };
+      for (const imageId of usedImageIds(nextDoc)) { const v = await store.get("img:" + imageId); if (v) images[imageId] = v; }
+      await store.set("catalog", nextCatalog);
+      catalog = nextCatalog; doc = nextDoc; prefs = { tab: "book", device: guessDevice(), syncedAt: null, ...p };
+      resetBookView(); storageOK = true;
+    } catch (e) { storageOK = false; toast("Не удалось переключить книгу. Текущая книга сохранена в окне."); }
+    finally { bookBusy = false; renderBookbar(); }
+  }
+  function resetBookView() {
+    clearTimeout(posTimer); posTimer = null;
+    clearTimeout(mapSaveT); clearTimeout(mapTimer);
+    clearSel(); closePop(); curBlock = null; undoStack = []; lastSnap = 0; MV = null; mapSel = null; mapMulti.clear();
+    seedDismissed = false; posReady = false; posLast = "";
+    if (prefs.tab !== SUM && prefs.tab !== MAP && !doc.parts.some(p => p.id === prefs.tab)) prefs.tab = "book";
+    renderAll(); posLast = JSON.stringify(prefs.pos || {}); posReady = true; restorePosSoon();
+  }
+  async function createBook(title) {
+    if (bookBusy) return;
+    if (typeof title !== "string") {
+      const input = el("input"); input.type = "text"; input.maxLength = 100; input.placeholder = "Название книги"; input.setAttribute("aria-label", "Название книги");
+      openModal("Новая книга", input, [
+        { label: "Создать", primary: true, fn: () => { if (!input.value.trim()) { input.focus(); return false; } createBook(input.value); } },
+        { label: "Отмена" }
+      ]);
+      input.focus(); return;
+    }
+    if (!title || !title.trim()) return;
+    const clean = title.trim().replace(/\s+/g, " ").slice(0, 100);
+    const id = newId("b");
+    bookBusy = true; renderBookbar();
+    try {
+      savePos(); await savePrefs(); clearTimeout(saveTimer); saveTimer = null;
+      await store.set(bookKey(catalog.active, "doc"), doc);
+      const nextDoc = normalizeDoc(emptyBook(clean)), nextPrefs = { tab: "book", device: prefs.device, syncedAt: null };
+      await store.set(bookKey(id, "doc"), nextDoc); await store.set(bookKey(id, "prefs"), nextPrefs);
+      const books = catalog.books.map(b => b.id === catalog.active ? { ...b, title: doc.title || b.title } : b);
+      const nextCatalog = { active: id, books: [...books, { id, title: clean }] };
+      await store.set("catalog", nextCatalog);
+      catalog = nextCatalog; doc = nextDoc; prefs = nextPrefs; resetBookView(); storageOK = true;
+    } catch (e) { storageOK = false; toast("Не удалось создать книгу. Текущая книга сохранена в окне."); }
+    finally { bookBusy = false; renderBookbar(); }
   }
   // Каждая вкладка открывается там, где на ней остановился (место своё на каждом устройстве)
   function switchTab(id) {
@@ -1388,6 +1715,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       g.append(el("span"), m); sec.append(g);
     }
     for (const b of s.blocks) sec.append(renderRow(s, b));
+    lnSection(sec, p, s);
     return sec;
   }
 
@@ -1407,7 +1735,9 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function renderRow(s, b) {
     const row = el("div", "row grid"); row.dataset.bid = b.id;
     if (curBlock === b.id) row.classList.add("cur");
-    const hd = btn("hd", "⋯", () => openBlockMenu(b.id, hd)); hd.setAttribute("aria-label", "Действия с блоком");
+    const hd = btn("hd", "⠿", () => openBlockMenu(b.id, hd)); hd.setAttribute("aria-label", "Действия с блоком");
+    hd.title = "Потяните, чтобы переместить блок. Нажмите, чтобы открыть меню.";
+    bindBlockReorder(hd, row, s, b);
     const main = el("div", "main");
     // «под вопросом» (задача 16): место абзаца ещё не решено — рамка и подпись; нажми на подпись — поправить
     if (typeof b.q === "string" && inBook(s)) {
@@ -1440,6 +1770,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       cap.addEventListener("input", () => { b.cap = cap.value; touch(); });
       fig.append(cap); main.append(fig);
     }
+    lnRow(main, s, b, !edit);
     const side = el("div", "side");
     for (const { c, anch } of orderedComments(b)) {
       let quote = "", lg = null;
@@ -1453,6 +1784,62 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     row.append(hd, main, side);
     if (bmAt(b.id)) paintBm(row, true);
     return row;
+  }
+
+  // Захват блока работает и при чтении, и при правке текста; короткое нажатие открывает меню.
+  function bindBlockReorder(handle, row, section, block) {
+    let drag = null, suppressClick = false;
+    handle.addEventListener("click", e => { if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    const clear = () => {
+      document.querySelectorAll(".row.block-drop-before,.row.block-drop-after").forEach(x => x.classList.remove("block-drop-before", "block-drop-after"));
+      row.classList.remove("block-dragging");
+    };
+    const targetAt = (x, y) => {
+      const target = document.elementFromPoint(x, y)?.closest("#view .sec .row");
+      return target && target.closest(".sec")?.dataset.sid === section.id ? target : null;
+    };
+    handle.addEventListener("pointerdown", e => {
+      if (e.button !== 0 || section.blocks.length < 2) return;
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, active: false };
+      try { handle.setPointerCapture(e.pointerId); } catch (_) { }
+    });
+    handle.addEventListener("pointermove", e => {
+      if (!drag || drag.id !== e.pointerId) return;
+      if (!drag.active && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+      if (!drag.active) {
+        drag.active = true; suppressClick = true;
+        row.classList.add("block-dragging");
+      }
+      e.preventDefault();
+      document.querySelectorAll(".row.block-drop-before,.row.block-drop-after").forEach(x => x.classList.remove("block-drop-before", "block-drop-after"));
+      const target = targetAt(e.clientX, e.clientY);
+      if (target && target !== row) {
+        const r = target.getBoundingClientRect();
+        target.classList.add(e.clientY < r.top + r.height / 2 ? "block-drop-before" : "block-drop-after");
+      }
+    });
+    const finish = e => {
+      if (!drag || drag.id !== e.pointerId) return;
+      const wasActive = drag.active; drag = null;
+      try { handle.releasePointerCapture(e.pointerId); } catch (_) { }
+      if (!wasActive) return;
+      setTimeout(() => { suppressClick = false; }, 0);
+      if (e.type === "pointercancel") { clear(); return; }
+      const target = targetAt(e.clientX, e.clientY);
+      const r = target && target.getBoundingClientRect(), after = !!(r && e.clientY >= r.top + r.height / 2);
+      clear();
+      if (!target || target === row) return;
+      const from = section.blocks.findIndex(x => x.id === block.id), to = section.blocks.findIndex(x => x.id === target.dataset.bid);
+      if (from < 0 || to < 0) return;
+      let at = to + (after ? 1 : 0); if (from < at) at--;
+      if (at === from) return;
+      pushUndo();
+      const [moved] = section.blocks.splice(from, 1);
+      section.blocks.splice(at, 0, moved);
+      touch(); renderView(true); toast("Порядок блоков сохранён");
+    };
+    handle.addEventListener("pointerup", finish);
+    handle.addEventListener("pointercancel", finish);
   }
 
   // lg — группа «Идеи»/«Вопроса», если комментарий связан с пометкой (задача 14): тогда вместо «цитаты» — значок и подсвеченные слова
@@ -1960,6 +2347,11 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const f = findBlock(bid); if (!f) return;
     const k = bmAt(bid);
     const items = [
+      ...(["book", "concept"].includes(f.p.id) ? [{ label: f.p.id === "book" ? "Связь с концепцией…" : "Связь с книгой…", fn: () => openLinks(bid) }] : []),
+      ...(f.p.id === "concept" ? [{ label: f.b.nb ? "Вернуть в учёт" : "Не для книги", fn: () => {
+        if ((lx().refs.get(f.b.a) || []).length) { openLinks(bid); toast("Сначала удалите существующие связи"); return; }
+        pushUndo(); f.b.nb = !f.b.nb; lnChanged();
+      } }] : []),
       k ? { label: "Убрать закладку", fn: () => removeBm(k.id) } : { label: "Поставить закладку", fn: () => addBm(bid) },
       { label: "Комментарий к блоку", fn: () => addBlockComment(bid) }
     ];
@@ -2021,7 +2413,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: `Это устройство: ${prefs.device}…`, fn: openDevice },
       { sep: true },
       { label: "Вернуть как было до импорта…", fn: openRestore },
-      SITE ? null : { label: "Начать заново с исходного текста…", fn: openReset }
+      SITE || doc.independent ? null : { label: "Начать заново с исходного текста…", fn: openReset }
     ].filter(Boolean));
   });
 
@@ -2076,6 +2468,16 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     redo: "этот кусок переписать"
   };
   const HOWTO = [
+    ["Связи книги и концепции", [
+      "У абзаца концепции нажми статус или «⋯ → Связь с книгой…». Выбери главу, абзац и полное или частичное использование. В книге — «⋯ → Связь с концепцией…».",
+      "✓ — в книге, ◐ — частично, ○ — не в книге, — — не для книги. В «Открытых вопросах» это означает «решено в книге / частично / не решено / не для книги». «Не для книги» доступно после удаления связей.",
+      "Ссылки к1, к2 после абзаца и список «Из концепции» ведут к исходной идее. «← Вернуться» возвращает на прежнее место. Фильтр концепции сбрасывается при переходе, чтобы показать цель.",
+      "На карте статусы и кN видны у блоков, связанные абзацы — на панели. В сводке «Не в книге» показывает только ○; частично использованные и исключённые сюда не входят. Связи переносятся с экспортом и отменяются кнопкой «Отменить»."
+    ]],
+    ["Книги и порядок блоков", [
+      "На компьютере список над вкладками переключает книги; «+ Новая книга» создаёт пустую книгу. У каждой книги свои текст, заметки, настройки и резервная копия до импорта.",
+      "Потяни значок «⠿» слева от блока, чтобы переставить его внутри раздела. Это работает и при чтении, и при правке текста. Короткое нажатие открывает меню блока. Линия показывает место вставки; перестановку можно отменить."
+    ]],
     ["Пометки и комментарии", [
       "Выдели слова и нажми на панели группу, «Зачеркнуть», «Комментарий», «Удалить» или «Снять». «Отменить» возвращает последний шаг (Ctrl+Z на компьютере).",
       "«Идея» и «Вопрос» ставятся сразу с комментарием: откроется поле, напиши, что имеешь в виду. Пустое поле или «Отмена» — пометки нет. «Снять» на этих словах или × у выноски убирает и пометку, и комментарий.",
@@ -2260,6 +2662,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     if (own.length) L.push(`<!-- Свои группы автора: ${own.join(", ")}. -->`);
     L.push("<!-- ~~…~~ — зачёркнуто автором. {слова}[^N] — комментарий к словам; строка [^N] под абзацем — комментарий ко всему абзацу. -->");
     L.push("<!-- Строки, начинающиеся с «> », — заметки автора, не текст книги. -->");
+    L.push("<!-- Связи: якорь — постоянный ключ абзаца концепции; концепция: a1, a2 частично — ссылки книги; не для книги — исключено из учёта. Сохраняй эти строки и якоря при правке. -->");
     L.push("<!-- Строка «под вопросом: …» над абзацем — место абзаца в книге ещё не решено; после двоеточия — сомнение автора. Абзац — часть главы. -->");
     L.push(`<!-- Отвечая, сохраняй этот формат${nm("keep") ? ` и пометки «${nm("keep")}»` : ""}. -->`);
     return L;
@@ -2323,7 +2726,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       { label: "Отмена" }
     ]);
   });
-  async function backupCurrent() { try { await store.set("backup", { doc: JSON.parse(JSON.stringify(doc)), at: nowISO() }); } catch (e) { } }
+  async function backupCurrent() { await store.set(bookKey(catalog.active, "backup"), { doc: JSON.parse(JSON.stringify(doc)), at: nowISO() }); }
   async function doImport(d) {
     await backupCurrent();
     const imgs = d.images && typeof d.images === "object" ? d.images : {};
@@ -2335,14 +2738,15 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     await saveNow(); renderAll(); toast("Данные из файла загружены");
   }
   async function openRestore() {
-    let bk = null; try { bk = await store.get("backup"); } catch (e) { }
+    let bk = null; try { bk = await store.get(bookKey(catalog.active, "backup")); } catch (e) { }
     if (!bk || !bk.doc) { openModal("Резервной копии нет", para("Она появляется, когда ты загружаешь файл через «Импорт» или новую версию текста.")); return; }
     openModal("Вернуть как было до импорта?", para(`Резервная копия от ${esc(fmt(bk.at))}: ${statLine(stats(bk.doc))}. Текущие данные заменятся ею.`), [
-      { label: "Вернуть", primary: true, fn: () => { (async () => { const cur = JSON.parse(JSON.stringify(doc)); doc = normalizeDoc(bk.doc); try { await store.set("backup", { doc: cur, at: nowISO() }); } catch (e) { } touch(); undoStack = []; renderAll(); toast("Данные возвращены"); })(); } },
+      { label: "Вернуть", primary: true, fn: () => { (async () => { const cur = JSON.parse(JSON.stringify(doc)); await store.set(bookKey(catalog.active, "backup"), { doc: cur, at: nowISO() }); doc = normalizeDoc(bk.doc); touch(); undoStack = []; renderAll(); toast("Данные возвращены"); })(); } },
       { label: "Отмена" }
     ]);
   }
   function openReset() {
+    if (doc.independent) { toast("Для новой книги исходного текста нет"); return; }
     openModal("Начать заново с исходного текста?", para("Текст вернётся к последней версии от Claude (с оставленными в ней пометками и комментариями), твои правки после неё и картинки уберутся. Текущие данные сохранятся в резервной копии: «Ещё» → «Вернуть как было до импорта»."), [
       { label: "Начать заново", primary: true, fn: () => { (async () => { await backupCurrent(); const g = doc.groups, bm = doc.bm; doc = buildSeed(); doc.groups = g; doc.bm = bm; touch(); undoStack = []; renderAll(); toast("Исходный текст загружен"); })(); } },
       { label: "Отмена" }
@@ -2517,11 +2921,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function renderSummary(v) {
     const items = collectItems();
+    const concept = doc.parts.find(p => p.id === "concept");
+    for (const s of concept?.sections || []) for (const b of s.blocks) if (lnStatus(b) === "none") items.push({ p: "concept", bid: b.id, path: "Концепция › " + s.title, k: "ln-none", text: blockText(b) });
     const wrap = el("div", "sum");
     wrap.append(el("h2", "", "Сводка пометок"));
-    const kinds = [{ id: "all", name: "Все" }, ...doc.groups.map(g => ({ id: "g:" + g.id, name: g.name, g: g.id })), { id: "s", name: "Зачёркнутое" }, { id: "c", name: "Комментарии" }, { id: "n", name: "Заметки" }, { id: "i", name: "Картинки" }];
+    const kinds = [{ id: "all", name: "Все" }, ...doc.groups.map(g => ({ id: "g:" + g.id, name: g.name, g: g.id })), { id: "s", name: "Зачёркнутое" }, { id: "c", name: "Комментарии" }, { id: "n", name: "Заметки" }, { id: "i", name: "Картинки" }, { id: "ln-none", name: "Не в книге" }];
     // пометка с комментарием видна и в своей группе, и в «Комментариях»; в «Все» — один раз
-    const match = (it, k) => k === "all" || (k.startsWith("g:") ? it.k === "g" && it.g === k.slice(2) : it.k === k || (k === "c" && !!it.lc));
+    const match = (it, k) => (k === "all" && it.k !== "ln-none") || (k.startsWith("g:") ? it.k === "g" && it.g === k.slice(2) : it.k === k || (k === "c" && !!it.lc));
     const count = k => items.filter(it => match(it, k)).length;
     const fr = el("div", "sum-row"); fr.setAttribute("role", "group"); fr.setAttribute("aria-label", "Фильтр");
     for (const k of kinds) {
@@ -2541,13 +2947,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     else {
       const ul = el("div", "sum-list");
       for (const it of list) {
-        const b = btn("sum-item", null, () => jumpTo(it.p, it.bid));
+        const b = btn("sum-item", null, () => it.k === "ln-none" ? lnNavigate(findBlock(it.bid)) : jumpTo(it.p, it.bid));
         let kind;
         const ic = it.k === "g" ? gIcon(it.g) : null;
         // у «Идеи», «Вопроса» и «Важно» — значок вместо названия, сразу за ним подсвеченные слова (задача 14)
         if (ic) { kind = el("span", "sum-kind sum-ic"); kind.append(ic); kind.title = groupName(it.g); kind.setAttribute("aria-label", groupName(it.g)); b.classList.add("ic"); }
         else if (it.k === "g") { kind = el("span", "sum-kind gname", groupName(it.g)); kind.dataset.g = it.g; }
-        else kind = el("span", "sum-kind", { s: "Зачёркнуто", c: "Комментарий", n: "Заметка", i: "Картинка" }[it.k]);
+        else kind = el("span", "sum-kind", { s: "Зачёркнуто", c: "Комментарий", n: "Заметка", i: "Картинка", "ln-none": "○ Не в книге" }[it.k]);
         const tx = el("span", "sum-text");
         if (it.k === "g") { const m = el("span", "gname", short(it.text, 260)); m.dataset.g = it.g; tx.append(m); }
         else tx.textContent = short(it.text, 260);
@@ -3591,6 +3997,14 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function metaEl(blocks, withN) {
     const m = el("span", "mp-m"), st = marksOf(blocks);
+    if (!withN && blocks.length === 1) {
+      const b = blocks[0], f = findBlock(b.id);
+      if (f?.p.id === "concept") m.append(el("span", "ln-map-status", lnStatusText(b, f.s)));
+      else if (f?.p.id === "book") {
+        const ns = lx().num.get(f.s.id), links = lnNorm(b.ln);
+        if (links.length) m.append(el("span", "ln-map-status", links.map(r => "к" + ns?.get(r.a)).join(", ")));
+      }
+    }
     m.append(dotsEl(st.g, withN));
     if (st.c) { const c = el("span", "mp-cc", String(st.c)); c.title = "Комментариев: " + st.c; m.append(c); }
     m.append(el("span", "mp-len", numFmt(blocks.reduce((a, b) => a + lenOf(b), 0)) + " зн."));
@@ -4208,6 +4622,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     if (doc.map && doc.map.draft) box.append(el("p", "mp-stat", `Перестановок не сохранено: ${draftCount(st)}.`));
     if (conc) {
       box.append(el("h3", "mp-h", "Концепция"));
+      box.append(el("p", "mp-stat", lnStats(conc.sections)));
       const all = conc.sections.reduce((a, s) => a + s.blocks.length, 0);
       const placed = s => s.blocks.filter(b => mpos("b", b.id) || st.where.has(b.id)).length;
       box.append(el("p", "mp-stat", `разделов ${conc.sections.length} · абзацев ${all} · на карте ${conc.sections.reduce((a, s) => a + placed(s), 0)}`));
@@ -4237,7 +4652,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       const where = st.where.get(b.id), pq = mpos("b", b.id), eps = epochsSorted();
       const at = where ? "в главе" + (qOf(b) != null ? " (?)" : "") : pq && eps.length ? (eps[bandOf(eps, pq.y)].title || "Эпоха") : "";
       const r = btn("mp-li mp-cli" + (where || pq ? " on" : ""), null, () => { if (r._dragged) return; mapNav = { sec: sid }; mapSelect({ k: "bl", id: b.id }); mapReveal(b.id); });
-      r.append(el("span", "mp-li-t", (i + 1) + ". " + labelOf(b, true)), el("span", "mp-li-s", (at ? at + " · " : "") + numFmt(lenOf(b))));
+      r.append(el("span", "mp-li-t", LN_GLYPH[lnStatus(b)] + " " + (i + 1) + ". " + labelOf(b, true)), el("span", "mp-li-s", (at ? at + " · " : "") + numFmt(lenOf(b))));
       panelDragBind(r, b.id);
       l.append(r);
     });
@@ -4265,6 +4680,10 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   function mapPanelBlock(box, bid, focus) {
     const f = findBlock(bid); if (!f) return mapOverview(box);
     const st = mapStruct(), { p, s, b } = f, concept = p.id !== "book";
+    if (["book", "concept"].includes(p.id)) {
+      const links = el("div", "ln-panel"); lnRow(links, s, b, false);
+      links.append(btn("", "Связь…", () => openLinks(bid))); box.append(links);
+    }
     const hs = st.where.get(b.id), hc = hs ? st.chapters.find(c => c.s.id === hs) : null, out = st.out.some(x => x.id === b.id);
     // «←»: абзац концепции — к списку своего раздела, абзац книги — к своей главе
     if (concept) mpBack(box, s.title || "Концепция", () => navTo(null, { sec: s.id }));
