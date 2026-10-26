@@ -531,7 +531,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <input type="file" id="imgfile" accept="image/*" multiple hidden>
-<input type="file" id="jsonfile" accept=".json,application/json" hidden>
+<input type="file" id="jsonfile" accept=".json,.txt,application/json,text/plain" hidden>
 
 <script>
 (function () {
@@ -2450,7 +2450,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     [
       LOCAL
         ? "Здесь, в окне на компьютере, нажми «Экспорт» → «Сохранить файл». Файл ляжет в папку «Экспорт» проекта, и откроется Проводник с ним: перетащи его в «Избранное» в Телеграме."
-        : "На устройстве, где правил, нажми «Экспорт» → «Сохранить файл». Если откроется меню «Поделиться», выбери Телеграм → «Избранное». Если файл просто скачался, отправь его в «Избранное» в Телеграме.",
+        : "На телефоне нажми «Экспорт» → «Поделиться файлом» → Телеграм → «Избранное». Файл .json.txt содержит все данные книги: на другом устройстве выбери его через «Импорт», переименовывать не нужно. «Сохранить файл .json» скачивает обычный файл в «Загрузки».",
       "На другом устройстве открой «Избранное» и сохрани файл: на телефоне «⋯» → «Сохранить в Загрузки» или «Сохранить в Файлы», на компьютере он сохранится в «Загрузки» Телеграма.",
       "Открой «Книгу Тишины» на другом устройстве и нажми «Импорт» → выбери файл. Данные заменятся. Прежние можно вернуть через «Ещё» → «Вернуть как было до импорта».",
       "Чтобы попросить Claude внести правки, пришли ему в чат этот же файл .json или «Текст для Claude» из окна «Экспорт»."
@@ -2517,7 +2517,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     ["Перенос и Claude", [
       LOCAL
         ? "«Экспорт» → «Сохранить файл .json»: файл со всем (текст, пометки, комментарии, картинки, закладки) ляжет в папку «Экспорт» проекта, откроется Проводник — перетащи файл в Телеграм → «Избранное». На другом устройстве — «Импорт» этого файла."
-        : "«Экспорт» → «Сохранить файл .json»: файл со всем (текст, пометки, комментарии, картинки, закладки). Появится «Поделиться» — выбери Телеграм → «Избранное»; файл скачался — отправь его туда. На другом устройстве — «Импорт» этого файла.",
+        : "На телефоне: «Экспорт» → «Поделиться файлом» → Телеграм → «Избранное» (или другое приложение). Файл .json.txt содержит всё: текст, пометки, комментарии, картинки, закладки. На другом устройстве — «Импорт» этого файла без переименования. «Сохранить файл .json» скачивает обычный файл; если отправка недоступна, файл также попадёт в «Загрузки».",
       "«Импорт» заменяет данные этого устройства данными из файла; прежние можно вернуть через «⋯» → «Вернуть как было до импорта…».",
       "«Текст для Claude» — весь текст с пометками («Экспорт» или «Сводка») или одна глава («⋯» у названия раздела). Пришли его Claude в чат — он поправит только эти главы. Так же выглядят файлы глав в папке «Текст».",
       "Claude обновил главы — сверху появится «Загрузить новую версию»: заменятся только изменённые главы, остальные с твоими пометками останутся как есть."
@@ -2562,14 +2562,24 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   function openExport() {
     const json = exportPayload();
-    const b1 = btn("primary", "Сохранить файл .json", async () => {
-      const ok = await saveFile(`Книга_Тишины_${stamp()}_${safeName(prefs.device)}.json`, json);
-      if (ok) { prefs.syncedAt = nowISO(); savePrefs(); renderStatus(); closeModal(); }
-    });
+    const filename = `Книга_Тишины_${stamp()}_${safeName(prefs.device)}.json`;
+    const exportedAt = JSON.parse(json).exportedAt;
+    let sending = false;
+    const send = async writer => {
+      if (sending) return;
+      sending = true; b1.disabled = true; if (share) share.disabled = true;
+      try {
+        const ok = await writer(filename, json);
+        if (ok) { prefs.syncedAt = exportedAt; savePrefs(); renderStatus(); closeModal(); }
+      } finally { sending = false; b1.disabled = false; if (share) share.disabled = false; }
+    };
+    const b1 = btn(SITE ? "" : "primary", "Сохранить файл .json", () => send(saveFile));
+    const share = SITE ? btn("primary", "Поделиться файлом", () => send(shareFile)) : null;
     const md = () => buildMarkdown();
     const b2 = btn("", "Скопировать текст", () => copyText(md()));
     const b3 = btn("", "Сохранить .md", () => saveFile(`Книга_Тишины_для_Claude_${stamp()}.md`, md()));
-    const r1 = el("div", "mact"); r1.style.justifyContent = "flex-start"; r1.append(b1);
+    const r1 = el("div", "mact"); r1.style.justifyContent = "flex-start";
+    if (share) r1.append(share); r1.append(b1);
     const r2 = el("div", "mact"); r2.style.justifyContent = "flex-start"; r2.append(b2, b3);
     openModal("Экспорт", frag(
       para(`<b>Файл данных</b> · около ${sizeText(new Blob([json]).size)}`),
@@ -2598,6 +2608,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   }
   async function saveFile(filename, data) {
     if (LOCAL) return saveLocal(filename, data);
+    if (SITE) return downloadFile(latinName(filename), data);
     const dl = await getDownloads();
     if (!dl) return shareFile(filename, data);
     try {
@@ -2617,13 +2628,24 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
   const TR = { а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya" };
   function latinName(n) { return String(n).toLowerCase().replace(/[а-яё]/g, c => TR[c] ?? "").replace(/[^a-z0-9._-]+/g, "_"); }
   async function shareFile(filename, data) {
-    filename = latinName(filename);
-    const type = /\.md$/.test(filename) ? "text/markdown" : "application/json";
-    const file = new File([data], filename, { type });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: filename }); toast("Файл отправлен"); return true; }
-      catch (e) { if (e && e.name === "AbortError") { toast("Отправка отменена"); return false; } }
+    // Chrome ограничивает отправку .json/.md. Это тот же текстовый файл с расширением .txt;
+    // импорт читает содержимое JSON, поэтому переименовывать полученный файл не нужно.
+    const originalName = latinName(filename);
+    filename = /\.(json|md)$/i.test(originalName) ? originalName + ".txt" : originalName;
+    const file = new File([data], filename, { type: "text/plain" });
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Вызов прямо из нажатия, без ожидания загрузок или других асинхронных действий.
+        await navigator.share({ files: [file], title: filename });
+        toast("Файл передан выбранному приложению"); return true;
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") { toast("Отправка отменена"); return false; }
     }
+    return downloadFile(originalName, data);
+  }
+  function downloadFile(filename, data) {
+    const type = /\.md$/i.test(filename) ? "text/markdown" : "application/json";
     try {
       const url = URL.createObjectURL(new Blob([data], { type }));
       const a = document.createElement("a"); a.href = url; a.download = filename;
@@ -2633,6 +2655,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       return true;
     } catch (e) { toast("Не получилось сохранить файл"); return false; }
   }
+
   function copyText(text) {
     try {
       const p = navigator.clipboard && navigator.clipboard.writeText(text);
