@@ -533,6 +533,7 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
 <input type="file" id="imgfile" accept="image/*" multiple hidden>
 <input type="file" id="jsonfile" accept=".json,.txt,application/json,text/plain" hidden>
 
+<script src="pdf/book-pdf.js"></script>
 <script>
 (function () {
   "use strict";
@@ -2519,6 +2520,8 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
         ? "«Экспорт» → «Сохранить файл .json»: файл со всем (текст, пометки, комментарии, картинки, закладки) ляжет в папку «Экспорт» проекта, откроется Проводник — перетащи файл в Телеграм → «Избранное». На другом устройстве — «Импорт» этого файла."
         : "На телефоне: «Экспорт» → «Поделиться файлом» → Телеграм → «Избранное» (или другое приложение). Файл .json.txt содержит всё: текст, пометки, комментарии, картинки, закладки. На другом устройстве — «Импорт» этого файла без переименования. «Сохранить файл .json» скачивает обычный файл; если отправка недоступна, файл также попадёт в «Загрузки».",
       "«Импорт» заменяет данные этого устройства данными из файла; прежние можно вернуть через «⋯» → «Вернуть как было до импорта…».",
+      "«Книга в PDF» в «Экспорте» сохраняет чистовой вариант всей книги, включая свёрнутые главы: без цветных пометок, выносок, рабочих заметок и зачёркнутых фрагментов. Курсив, жирный текст и иллюстрации сохраняются. PDF не меняет книгу и не заменяет файл данных для переноса правок.",
+      "PDF: A4, поля по 1 см и слева 2 см, Roboto Condensed 13 пт, интервал 1,2, красная строка 6 мм без промежутков между абзацами и без переносов слов. Заголовок «# Название» становится «Глава 1. Название»; «## Название» — «Раздел 1.1. Название». Номера ставятся по текущему порядку книги; названия без # остаются без номера. На телефоне готовый PDF можно скачать или отправить через «Поделиться PDF».",
       "«Текст для Claude» — весь текст с пометками («Экспорт» или «Сводка») или одна глава («⋯» у названия раздела). Пришли его Claude в чат — он поправит только эти главы. Так же выглядят файлы глав в папке «Текст».",
       "Claude обновил главы — сверху появится «Загрузить новую версию»: заменятся только изменённые главы, остальные с твоими пометками останутся как есть."
     ]]
@@ -2578,6 +2581,34 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     const md = () => buildMarkdown();
     const b2 = btn("", "Скопировать текст", () => copyText(md()));
     const b3 = btn("", "Сохранить .md", () => saveFile(`Книга_Тишины_для_Claude_${stamp()}.md`, md()));
+    const pdf = btn("", "Книга в PDF", async () => {
+      if (pdf.disabled) return;
+      pdf.disabled = true; pdf.textContent = "Готовлю PDF…";
+      try {
+        // A snapshot includes current edits even if their autosave is still pending.
+        const snapshot = JSON.parse(JSON.stringify(doc));
+        const blob = await window.KnigaPDF.create(snapshot, { ...images });
+        const name = `${safeName(snapshot.title || "Книга").slice(0, 90)}_${stamp()}.pdf`;
+        if (LOCAL) {
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          let binary = "";
+          for (let at = 0; at < bytes.length; at += 8192) binary += String.fromCharCode(...bytes.subarray(at, at + 8192));
+          if (await saveLocal(name, btoa(binary), "base64")) closeModal();
+        } else {
+          const row = el("div", "mact"); row.style.justifyContent = "flex-start";
+          row.append(btn("primary", "Сохранить PDF", () => downloadFile(latinName(name), blob)));
+          if (navigator.share && navigator.canShare) {
+            const file = new File([blob], latinName(name), { type: "application/pdf" });
+            if (navigator.canShare({ files: [file] })) row.append(btn("", "Поделиться PDF", async () => {
+              try { await navigator.share({ files: [file], title: snapshot.title }); toast("PDF передан выбранному приложению"); }
+              catch (error) { if (error.name !== "AbortError") toast("Не получилось отправить PDF. Сохрани его кнопкой рядом."); }
+            }));
+          }
+          openModal("Книга в PDF", frag(para(`<b>PDF готов</b> · ${sizeText(blob.size)}`), row), [{ label: "Закрыть" }]);
+        }
+      } catch (error) { toast("Не получилось создать PDF: " + error.message); }
+      finally { pdf.disabled = false; pdf.textContent = "Книга в PDF"; }
+    });
     const r1 = el("div", "mact"); r1.style.justifyContent = "flex-start";
     if (share) r1.append(share); r1.append(b1);
     const r2 = el("div", "mact"); r2.style.justifyContent = "flex-start"; r2.append(b2, b3);
@@ -2586,7 +2617,10 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
       r1,
       el("hr"),
       para("<b>Текст для Claude</b>"),
-      r2
+      r2,
+      el("hr"),
+      para("<b>Готовая книга</b>"),
+      pdf
     ), [{ label: "Закрыть" }]);
   }
 
@@ -2597,12 +2631,12 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     return downloadsP;
   }
   getDownloads();
-  async function saveLocal(filename, data) {
+  async function saveLocal(filename, data, encoding) {
     try {
-      const r = await fetch("/api/save", { method: "POST", headers: { ...LOCAL_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ filename, data }) });
+      const r = await fetch("/api/save", { method: "POST", headers: { ...LOCAL_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ filename, data, ...(encoding ? { encoding } : {}) }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || "ошибка " + r.status);
-      toast("Файл в папке «Экспорт»: перетащи его в Телеграм");
+      toast(/\.pdf$/i.test(filename) ? "PDF сохранён в папке «Экспорт»" : "Файл в папке «Экспорт»: перетащи его в Телеграм");
       return true;
     } catch (e) { toast("Не получилось сохранить файл: " + e.message); return false; }
   }
@@ -2645,13 +2679,13 @@ try { document.documentElement.dataset.theme = localStorage.getItem("kt-theme") 
     return downloadFile(originalName, data);
   }
   function downloadFile(filename, data) {
-    const type = /\.md$/i.test(filename) ? "text/markdown" : "application/json";
+    const type = /\.pdf$/i.test(filename) ? "application/pdf" : /\.md$/i.test(filename) ? "text/markdown" : "application/json";
     try {
       const url = URL.createObjectURL(new Blob([data], { type }));
       const a = document.createElement("a"); a.href = url; a.download = filename;
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
-      toast("Файл в «Загрузках»: отправь его в Телеграм → «Избранное»");
+      toast(type === "application/pdf" ? "PDF сохранён в «Загрузках»" : "Файл в «Загрузках»: отправь его в Телеграм → «Избранное»");
       return true;
     } catch (e) { toast("Не получилось сохранить файл"); return false; }
   }
